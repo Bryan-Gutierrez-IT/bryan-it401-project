@@ -156,20 +156,135 @@ bryan-it401-project/
     │
     └── assets.html
         Asset Directory and filtering interface.
+```
 
 ---
+
+## Installation Instructions
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/Bryan-Gutierrez-IT/bryan-it401-project.git
+```
+
+Move into the project directory:
+
+```bash
+cd bryan-it401-project
+```
+
+### 2. Switch to the A1 Branch
+
+```bash
+git switch bryan-it401-a1
+```
+
+### 3. Create a Virtual Environment
+
+```bash
+python3 -m venv .venv
+```
+
+### 4. Activate the Virtual Environment
+
+On macOS:
+
+```bash
+source .venv/bin/activate
+```
+
+On Windows:
+
+```bash
+.venv\Scripts\activate
+```
+
+### 5. Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 6. Run the Application
+
+```bash
+python app.py
+```
+
+Open the application in a browser at:
+
+```text
+http://127.0.0.1:5000
+```
+
+The Asset Directory can be accessed at:
+
+```text
+http://127.0.0.1:5000/assets
+```
+
+---
+
+## Using the Asset Filter
+
+The Asset Directory allows users to filter the JSON asset data using the search field.
+
+For example:
+
+- Searching `Laptop` displays laptop assets.
+- Searching `Culver City` displays assets located in Culver City.
+- Searching `Available` displays assets currently available.
+- Searching an employee name displays equipment assigned to that employee.
+
+The Flask application reads the search query from the URL and compares it against the values stored for each asset in `assets.json`.
+
+---
+
 ## Screenshots
 
 ### Homepage
+
+The homepage introduces BryghtCentral, displays the custom logo, explains the purpose of the application, and provides navigation to the Asset Directory.
 
 ![BryghtCentral Homepage](static/screenshots/homepage.png)
 
 ### Asset Directory
 
+The Asset Directory displays asset information loaded from the JSON data store.
+
 ![BryghtCentral Asset Directory](static/screenshots/asset-directory.png)
 
 ### Filtering Feature
 
-The example below shows the Asset Directory filtered by location.
+The Asset Directory includes a filtering feature that allows users to search the JSON data by values such as location, device type, employee, department, or status.
 
 ![BryghtCentral Filtered Asset Directory](static/screenshots/filtered-assets.png)
+
+---
+
+## Future Work
+
+For Assignment 2, BryghtCentral will be expanded based on the new Web Intelligence concepts introduced in Module 2.
+
+Planned improvements may include:
+
+- Acquiring information from an external API or other information source
+- Expanding the asset information available to users
+- Improving search and filtering capabilities
+- Adding additional IT operations information
+- Preparing the application for persistent data storage in later assignments
+
+The longer-term goal is to develop BryghtCentral into an intelligent IT operations system that can collect, organize, retrieve, analyze, and use information to support IT decision-making.
+
+---
+
+## Technologies Used
+
+- Python
+- Flask
+- HTML
+- CSS
+- JSON
+- Git
+- GitHub
