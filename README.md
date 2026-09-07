@@ -1,86 +1,158 @@
-# IT401 Project Template
+# BryghtCentral
 
-A Flask project template with a clean separation of concerns: routes, services, and models
-are kept in their own files/directories so the codebase stays organized as it grows.
+**Student:** Bryan Gutierrez  
+**Course:** IT 401 - Web Intelligence  
+**Assignment:** A1 - Customize & Extend the IT401 Project Template
+
+---
+
+## Project Overview
+
+BryghtCentral is an IT operations management application designed to help organizations manage technology assets and related IT information in one centralized system.
+
+The application is intended for IT support teams and other technology staff who need a simple way to view equipment, identify who devices are assigned to, locate assets, and understand their current status.
+
+The problem BryghtCentral addresses is that IT information can become difficult to manage when equipment, employees, locations, and access information are stored across separate systems or spreadsheets. BryghtCentral is intended to bring this information together and eventually provide search, analysis, and decision-support capabilities.
+
+---
+
+## Preliminary Semester Project Concept
+
+The planned direction for BryghtCentral is to develop it into an intelligent IT operations information system.
+
+The application will eventually manage information related to:
+
+- IT assets and equipment
+- Employees
+- Departments
+- Office locations
+- Device assignments
+- Asset status
+- User access
+- Employee onboarding and offboarding
+- Equipment moves and reassignment
+
+Future versions may also include search and retrieval tools, persistent database storage, external information sources, intelligent analysis, and decision-support features.
+
+This project concept is preliminary and may be refined after Module 2 as additional APIs and information sources are explored.
+
+---
+
+## Current Features
+
+Assignment A1 currently includes the following features:
+
+- Customized BryghtCentral homepage
+- Custom BryghtCentral logo
+- Shared page layout using `base.html`
+- Navigation between application pages
+- Asset Directory page
+- Flask `/assets` route
+- Asset information loaded from a JSON data file
+- Dynamic asset filtering
+- Search by:
+  - Asset ID
+  - Device type
+  - Device model
+  - Employee
+  - Department
+  - Location
+  - Status
+- Clear filter functionality
+- Responsive page styling
+
+---
+
+## Information Model
+
+BryghtCentral will eventually manage several types of IT operations information.
+
+### Asset
+
+Current asset attributes include:
+
+- Asset ID
+- Asset type
+- Device model
+- Assigned employee
+- Department
+- Location
+- Status
+
+### Employee
+
+Planned employee information may include:
+
+- Employee name
+- Department
+- Job role
+- Office location
+- Assigned equipment
+- Access permissions
+- Employment status
+
+### Location
+
+Planned location information may include:
+
+- Office name
+- Building
+- Floor
+- Workspace
+- Assigned employees
+- Installed equipment
+
+### Access
+
+Future access information may include:
+
+- Employee
+- Application or system
+- Access level
+- Account status
+
+No database schema has been implemented at this stage. Assignment A1 currently uses JSON data as the application's information source.
+
+---
 
 ## Project Structure
 
-```
-project/
-├── app.py                 # App factory, entry point
-├── config.py               # Environment-based configuration
-├── routes/                  # View functions
-├── requirements.txt
-├── services/                # Business logic and external integrations
-│   ├── api_service.py       # Generic outbound HTTP client
-│   ├── search_service.py    # Search logic
-│   └── ai_service.py        # AI/LLM integration
-├── models/                  # Data models
-├── templates/                # Jinja2 HTML templates
-├── static/                   # CSS, JS, images
-├── data/                      # Local data files
-└── tests/                      # Test suite
-```
-
-## Prerequisites
-
-- Python 3.10+
-- Git
-
-## Setup
-
-1. Clone the repository:
-
-   ```bash
-   git clone <repository-url>
-   cd project
-   ```
-
-2. Create and activate a virtual environment:
-
-   ```bash
-   python3 -m venv .venv
-
-   # macOS / Linux
-   source .venv/bin/activate
-
-   # Windows (Command Prompt / PowerShell)
-   .venv\Scripts\activate
-   ```
-
-3. Install dependencies:
-
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-## Running the App
-
-With the virtual environment activated:
-
-```bash
-python app.py
-```
-
-The app will be available at [http://127.0.0.1:5000](http://127.0.0.1:5000).
-
-By default it runs in development mode. Set `FLASK_ENV=production` to use the production config.
-
-## Configuration
-
-Configuration lives in `config.py` and reads from environment variables:
-
-| Variable            | Description                          |
-|---------------------|---------------------------------------|
-| `SECRET_KEY`         | Flask secret key                      |
-| `API_KEY`             | Key for external API service          |
-| `AI_SERVICE_API_KEY`   | Key for AI service integration        |
-| `FLASK_ENV`             | `development` or `production`         |
-
-## Testing
-
-With the virtual environment activated:
-
-```bash
-python -m pytest tests/
-```
+```text
+bryan-it401-project/
+│
+├── app.py
+│   Main Flask application entry point.
+│
+├── README.md
+│   Project documentation.
+│
+├── data/
+│   └── assets.json
+│       Sample IT asset data used by the Asset Directory.
+│
+├── routes/
+│   └── main.py
+│       Contains the homepage and Asset Directory Flask routes.
+│
+├── static/
+│   ├── style.css
+│   │   Application styling.
+│   │
+│   ├── images/
+│   │   └── bryghtcentral-logo.svg
+│   │       Custom BryghtCentral logo.
+│   │
+│   └── screenshots/
+│       ├── homepage.png
+│       ├── asset-directory.png
+│       └── filtered-assets.png
+│
+└── templates/
+    ├── base.html
+    │   Shared application layout, navigation, and footer.
+    │
+    ├── index.html
+    │   BryghtCentral homepage.
+    │
+    └── assets.html
+        Asset Directory and filtering interface.
