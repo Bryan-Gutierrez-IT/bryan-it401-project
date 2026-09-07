@@ -156,6 +156,8 @@ bryan-it401-project/
     │
     └── assets.html
         Asset Directory and filtering interface.
+
+---
 ## Screenshots
 
 ### Homepage
