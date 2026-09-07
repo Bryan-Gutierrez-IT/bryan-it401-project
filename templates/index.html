@@ -1,11 +1,45 @@
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>IT401 Project</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-    <h1>It works!</h1>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}
+BryghtCentral | Home
+{% endblock %}
+
+{% block content %}
+
+<section class="hero">
+
+    <div class="hero-text">
+        <p class="eyebrow">IT OPERATIONS INTELLIGENCE</p>
+
+        <h1>Keep IT operations organized.</h1>
+
+        <p class="tagline">
+            Smarter IT operations in one place.
+        </p>
+
+        <p class="description">
+            BryghtCentral is an IT operations management application
+            designed to organize company technology assets, employees,
+            locations, and support information in one centralized system.
+            It helps IT teams quickly locate equipment and understand
+            how technology resources are being used across an organization.
+        </p>
+
+        <p class="student">
+            Created by <strong>Bryan Gutierrez</strong>
+        </p>
+
+        <a class="button" href="{{ url_for('assets') }}">
+            Explore Asset Directory
+        </a>
+    </div>
+
+    <div class="hero-logo">
+        <img
+            src="{{ url_for('static', filename='images/bryghtcentral-logo.svg') }}"
+            alt="BryghtCentral logo">
+    </div>
+
+</section>
+
+{% endblock %}

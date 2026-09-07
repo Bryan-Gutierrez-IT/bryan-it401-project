@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}
+Asset Directory | BryghtCentral
+{% endblock %}
+
+{% block content %}
+
+<section class="page-header">
+    <p class="eyebrow">BRYGHTCENTRAL • IT ASSET MANAGEMENT</p>
+
+    <h1>Asset Directory</h1>
+
+    <p>
+        Search company technology assets by asset ID, device type,
+        model, employee, department, location, or status.
+    </p>
+</section>
+
+
+<section class="directory">
+
+    <form class="search-form" method="GET"
+          action="{{ url_for('assets') }}">
+
+        <input
+            type="text"
+            name="q"
+            placeholder="Search assets..."
+            value="{{ search_query }}">
+
+        <button type="submit">
+            Filter Assets
+        </button>
+
+        {% if search_query %}
+        <a class="clear-link"
+           href="{{ url_for('assets') }}">
+            Clear Filter
+        </a>
+        {% endif %}
+
+    </form>
+
+
+    <p class="result-count">
+        {{ assets|length }} asset(s) found
+    </p>
+
+
+    <div class="asset-grid">
+
+        {% for asset in assets %}
+
+        <article class="asset-card">
+
+            <div class="asset-card-top">
+                <span>{{ asset.asset_id }}</span>
+
+                <span class="status">
+                    {{ asset.status }}
+                </span>
+            </div>
+
+            <h2>{{ asset.model }}</h2>
+
+            <p>
+                <strong>Type:</strong>
+                {{ asset.type }}
+            </p>
+
+            <p>
+                <strong>Assigned to:</strong>
+                {{ asset.employee }}
+            </p>
+
+            <p>
+                <strong>Department:</strong>
+                {{ asset.department }}
+            </p>
+
+            <p>
+                <strong>Location:</strong>
+                {{ asset.location }}
+            </p>
+
+        </article>
+
+        {% else %}
+
+        <p class="no-results">
+            No assets match your search.
+        </p>
+
+        {% endfor %}
+
+    </div>
+
+</section>
+
+{% endblock %}

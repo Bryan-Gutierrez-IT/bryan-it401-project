@@ -1,0 +1,56 @@
+[
+    {
+        "asset_id": "BC-LT-1001",
+        "type": "Laptop",
+        "model": "MacBook Pro 16",
+        "employee": "Aaron Luna",
+        "department": "IT",
+        "location": "Culver City",
+        "status": "Assigned"
+    },
+    {
+        "asset_id": "BC-LT-1002",
+        "type": "Laptop",
+        "model": "Dell Latitude 5450",
+        "employee": "Raymond Astorga",
+        "department": "Marketing",
+        "location": "Los Angeles",
+        "status": "Assigned"
+    },
+    {
+        "asset_id": "BC-LT-1003",
+        "type": "Laptop",
+        "model": "MacBook Air 13",
+        "employee": "Paul Duarte",
+        "department": "Product Design",
+        "location": "Culver City",
+        "status": "Assigned"
+    },
+    {
+        "asset_id": "BC-MN-2001",
+        "type": "Monitor",
+        "model": "Dell UltraSharp 27",
+        "employee": "Unassigned",
+        "department": "IT",
+        "location": "Los Angeles",
+        "status": "Available"
+    },
+    {
+        "asset_id": "BC-LT-1004",
+        "type": "Laptop",
+        "model": "Dell Latitude 5440",
+        "employee": "Unassigned",
+        "department": "IT",
+        "location": "Culver City",
+        "status": "Available"
+    },
+    {
+        "asset_id": "BC-TB-3001",
+        "type": "Tablet",
+        "model": "iPad Pro",
+        "employee": "Unassigned",
+        "department": "Marketing",
+        "location": "Los Angeles",
+        "status": "Repair"
+    }
+]

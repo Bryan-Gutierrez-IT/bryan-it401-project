@@ -1,0 +1,110 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1b2336"/>
+      <stop offset="100%" stop-color="#111827"/>
+    </linearGradient>
+
+    <linearGradient id="accentGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#8ef7da"/>
+      <stop offset="100%" stop-color="#57d7b8"/>
+    </linearGradient>
+
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.25"/>
+    </filter>
+
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="0" stdDeviation="6" flood-color="#72e6c1" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+
+  <!-- App icon background -->
+  <rect x="28" y="28" width="456" height="456" rx="108" fill="url(#bgGrad)"/>
+
+  <!-- Subtle inner panel -->
+  <rect x="52" y="52" width="408" height="408" rx="92"
+        fill="none" stroke="#273248" stroke-width="2" opacity="0.85"/>
+
+  <!-- Decorative circuit lines -->
+  <g stroke="#2d415b" stroke-width="8" stroke-linecap="round" fill="none" opacity="0.9">
+    <path d="M98 154 H154"/>
+    <path d="M98 256 H142"/>
+    <path d="M98 358 H154"/>
+
+    <path d="M358 146 H414"/>
+    <path d="M370 256 H414"/>
+    <path d="M358 366 H414"/>
+
+    <path d="M256 92 V132"/>
+    <path d="M256 380 V420"/>
+  </g>
+
+  <!-- Main B group -->
+  <g filter="url(#softShadow)">
+    <!-- Spine -->
+    <rect x="150" y="116" width="58" height="280" rx="24" fill="#ffffff"/>
+
+    <!-- Top bowl -->
+    <path d="
+      M188 116
+      H278
+      C338 116 376 149 376 202
+      C376 253 340 282 278 282
+      H188
+      V234
+      H270
+      C301 234 320 223 320 202
+      C320 181 301 164 270 164
+      H188
+      Z
+    " fill="#ffffff"/>
+
+    <!-- Bottom bowl -->
+    <path d="
+      M188 230
+      H286
+      C351 230 390 265 390 324
+      C390 380 349 396 286 396
+      H188
+      V348
+      H278
+      C314 348 334 337 334 318
+      C334 296 314 278 278 278
+      H188
+      Z
+    " fill="#ffffff"/>
+  </g>
+
+  <!-- Accent traces that connect into the B -->
+  <g stroke="url(#accentGrad)" stroke-width="10" stroke-linecap="round" fill="none" filter="url(#glow)">
+    <line x1="150" y1="154" x2="112" y2="154"/>
+    <line x1="150" y1="256" x2="112" y2="256"/>
+    <line x1="150" y1="358" x2="112" y2="358"/>
+
+    <line x1="355" y1="146" x2="392" y2="146"/>
+    <line x1="370" y1="256" x2="406" y2="256"/>
+    <line x1="355" y1="366" x2="392" y2="366"/>
+
+    <line x1="256" y1="116" x2="256" y2="92"/>
+    <line x1="256" y1="396" x2="256" y2="420"/>
+  </g>
+
+  <!-- Circuit nodes -->
+  <g fill="url(#accentGrad)" filter="url(#glow)">
+    <circle cx="102" cy="154" r="10"/>
+    <circle cx="102" cy="256" r="10"/>
+    <circle cx="102" cy="358" r="10"/>
+
+    <circle cx="404" cy="146" r="10"/>
+    <circle cx="418" cy="256" r="10"/>
+    <circle cx="404" cy="366" r="10"/>
+
+    <circle cx="256" cy="82" r="10"/>
+    <circle cx="256" cy="430" r="10"/>
+
+    <!-- Inner “intelligence” nodes -->
+    <circle cx="286" cy="202" r="8"/>
+    <circle cx="294" cy="318" r="8"/>
+  </g>
+</svg>
