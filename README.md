@@ -156,3 +156,18 @@ bryan-it401-project/
     │
     └── assets.html
         Asset Directory and filtering interface.
+## Screenshots
+
+### Homepage
+
+![BryghtCentral Homepage](static/screenshots/homepage.png)
+
+### Asset Directory
+
+![BryghtCentral Asset Directory](static/screenshots/asset-directory.png)
+
+### Filtering Feature
+
+The example below shows the Asset Directory filtered by location.
+
+![BryghtCentral Filtered Asset Directory](static/screenshots/filtered-assets.png)
