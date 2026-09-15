@@ -199,3 +199,268 @@ footer {
         padding: 0 5%;
     }
 }
+/* =========================================
+   SUPPORT INTELLIGENCE
+   ========================================= */
+
+.support-dashboard {
+    padding: 0 10% 80px;
+}
+
+.support-search-card {
+    background: white;
+    border: 1px solid #e2e6eb;
+    border-radius: 12px;
+    padding: 28px;
+    margin-bottom: 35px;
+}
+
+.support-search-card h2 {
+    margin-top: 0;
+}
+
+.support-form {
+    display: flex;
+    gap: 12px;
+    align-items: end;
+    flex-wrap: wrap;
+}
+
+.support-form label {
+    width: 100%;
+    font-weight: 600;
+}
+
+.support-form select {
+    flex: 1;
+    min-width: 250px;
+    padding: 14px;
+    border: 1px solid #ccd2db;
+    border-radius: 6px;
+    background: white;
+    font-size: 1rem;
+}
+
+.support-form button {
+    padding: 14px 22px;
+    border: none;
+    border-radius: 6px;
+    background: #172033;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.support-form button:hover {
+    background: #2c3b58;
+}
+
+.source-note {
+    margin-bottom: 0;
+    margin-top: 18px;
+    color: #697386;
+    line-height: 1.5;
+}
+
+.support-section {
+    margin-top: 40px;
+}
+
+.section-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.section-heading h2 {
+    margin: 5px 0 0;
+}
+
+.source-badge {
+    background: #172033;
+    color: #ffffff;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+}
+
+.recommendation-card {
+    padding: 25px;
+    border-radius: 10px;
+    margin-bottom: 25px;
+}
+
+.recommendation-good {
+    background: #e4f8f1;
+    border-left: 6px solid #397b69;
+}
+
+.recommendation-warning {
+    background: #fff4db;
+    border-left: 6px solid #d69621;
+}
+
+.recommendation-label {
+    font-size: 0.75rem;
+    letter-spacing: 1.5px;
+    font-weight: 700;
+    margin-top: 0;
+}
+
+.recommendation-card h3 {
+    margin: 7px 0;
+}
+
+.lifecycle-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(auto-fit, minmax(280px, 1fr));
+    gap: 18px;
+}
+
+.lifecycle-card {
+    background: white;
+    border: 1px solid #e2e6eb;
+    border-radius: 10px;
+    padding: 22px;
+}
+
+.lifecycle-card-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    align-items: start;
+    font-weight: 700;
+}
+
+.release-codename {
+    color: #397b69;
+    font-weight: 600;
+}
+
+.release-details {
+    margin-top: 18px;
+    color: #505868;
+}
+
+.release-details p {
+    margin: 8px 0;
+}
+
+.status-badge {
+    padding: 5px 9px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    white-space: nowrap;
+}
+
+.status-badge.supported {
+    background: #e4f8f1;
+    color: #397b69;
+}
+
+.status-badge.ended {
+    background: #fde8e8;
+    color: #a33b3b;
+}
+
+.security-list {
+    display: grid;
+    gap: 15px;
+}
+
+.security-card {
+    padding: 22px;
+    background: white;
+    border: 1px solid #e2e6eb;
+    border-radius: 10px;
+}
+
+.security-card-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.security-card-header h3 {
+    margin-top: 0;
+}
+
+.security-card-header span {
+    color: #697386;
+    white-space: nowrap;
+}
+
+.security-card p {
+    color: #505868;
+    line-height: 1.5;
+}
+
+.security-card a {
+    color: #397b69;
+    font-weight: 600;
+}
+
+.no-link {
+    font-style: italic;
+}
+
+.source-footer {
+    margin-top: 18px;
+    color: #697386;
+}
+
+.source-footer a {
+    color: #397b69;
+}
+
+.support-error {
+    padding: 22px;
+    margin-top: 25px;
+    border-radius: 10px;
+    background: #fde8e8;
+    border-left: 6px solid #a33b3b;
+}
+
+.support-error h2 {
+    margin-top: 0;
+}
+
+
+@media (max-width: 750px) {
+
+    .section-heading,
+    .security-card-header {
+        align-items: start;
+        flex-direction: column;
+    }
+
+    .security-card-header span {
+        white-space: normal;
+    }
+}
+/* =========================================
+   SELECTED SUPPORT RELEASE
+   ========================================= */
+
+.selected-version-summary {
+    margin-bottom: 20px;
+}
+
+.selected-version-summary h2 {
+    margin: 5px 0;
+}
+
+.selected-version-summary p:last-child {
+    color: #397b69;
+    font-weight: 600;
+}
+
+
+.selected-release-card {
+    border: 2px solid #397b69;
+    box-shadow: 0 4px 14px
+        rgba(23, 32, 51, 0.08);
+}

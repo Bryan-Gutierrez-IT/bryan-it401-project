@@ -1,0 +1,639 @@
+{% extends "base.html" %}
+
+{% block title %}
+Support Intelligence | BryghtCentral
+{% endblock %}
+
+
+{% block content %}
+
+<section class="page-header">
+
+    <p class="eyebrow">
+        BRYGHTCENTRAL • EXTERNAL INTELLIGENCE
+    </p>
+
+    <h1>Support Intelligence</h1>
+
+    <p>
+        Check product lifecycle information and current
+        vendor security releases using external web sources.
+    </p>
+
+</section>
+
+
+<section class="support-dashboard">
+
+    <!-- =========================================
+         PRODUCT + VERSION SELECTION
+         ========================================= -->
+
+    <div class="support-search-card">
+
+        <h2>Analyze a Product</h2>
+
+        <form
+            method="GET"
+            action="{{ url_for('support_intelligence') }}"
+            class="support-form">
+
+
+            <!-- PRODUCT -->
+
+            <label for="product">
+                Product
+            </label>
+
+            <select
+                name="product"
+                id="product"
+                onchange="this.form.submit()">
+
+                <option
+                    value="macOS"
+                    {% if product|lower == "macos" %}
+                    selected
+                    {% endif %}>
+
+                    macOS
+
+                </option>
+
+                <option
+                    value="Chrome"
+                    {% if product|lower == "chrome" %}
+                    selected
+                    {% endif %}>
+
+                    Google Chrome
+
+                </option>
+
+            </select>
+
+
+            <!-- VERSION -->
+
+            {% if (
+                lifecycle_data
+                and lifecycle_data.success
+                and lifecycle_data.results
+            ) %}
+
+            <label for="version">
+                Version
+            </label>
+
+            <select
+                name="version"
+                id="version">
+
+                {% for release in lifecycle_data.results %}
+
+                <option
+                    value="{{ release.version }}"
+
+                    {% if (
+                        release.version|string
+                        == selected_version|string
+                    ) %}
+                    selected
+                    {% endif %}>
+
+                    {{ release.label }}
+
+                </option>
+
+                {% endfor %}
+
+            </select>
+
+            {% endif %}
+
+
+            <button type="submit">
+                Analyze Version
+            </button>
+
+        </form>
+
+
+        {% if product|lower == "macos" %}
+
+        <p class="source-note">
+
+            macOS analysis combines lifecycle API
+            information with current Apple security
+            release information.
+
+        </p>
+
+        {% elif product|lower == "chrome" %}
+
+        <p class="source-note">
+
+            Chrome analysis uses lifecycle information
+            to identify supported and ended browser
+            releases.
+
+        </p>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- =========================================
+         INVALID USER INPUT
+         ========================================= -->
+
+    {% if input_error %}
+
+    <div class="support-error">
+
+        <h2>Invalid Selection</h2>
+
+        <p>
+            {{ input_error }}
+        </p>
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- =========================================
+         API ERROR
+         ========================================= -->
+
+    {% if lifecycle_data %}
+
+        {% if not lifecycle_data.success %}
+
+        <div class="support-error">
+
+            <h2>
+                Lifecycle Data Error
+            </h2>
+
+            <p>
+                {{ lifecycle_data.error }}
+            </p>
+
+        </div>
+
+        {% else %}
+
+
+        <!-- =========================================
+             LIFECYCLE RESULTS
+             ========================================= -->
+
+        <div class="support-section">
+
+            <div class="section-heading">
+
+                <div>
+
+                    <p class="eyebrow">
+                        API SOURCE
+                    </p>
+
+                    <h2>
+                        {{ lifecycle_data.product }}
+                        Lifecycle
+                    </h2>
+
+                </div>
+
+                <span class="source-badge">
+                    endoflife.date API
+                </span>
+
+            </div>
+
+
+            <!-- =====================================
+                 SELECTED VERSION
+                 ===================================== -->
+
+            {% if selected_release %}
+
+            <div class="selected-version-summary">
+
+                <p class="eyebrow">
+                    SELECTED RELEASE
+                </p>
+
+                <h2>
+                    {{ selected_release.label }}
+                </h2>
+
+                {% if selected_release.codename %}
+
+                <p>
+                    {{ selected_release.codename }}
+                </p>
+
+                {% endif %}
+
+            </div>
+
+            {% endif %}
+
+
+            <!-- =====================================
+                 BRYGHTCENTRAL RECOMMENDATION
+                 ===================================== -->
+
+            {% if recommendation %}
+
+            <div
+                class="recommendation-card
+
+                {% if recommendation.level == 'Supported' %}
+                    recommendation-good
+                {% else %}
+                    recommendation-warning
+                {% endif %}
+                ">
+
+                <p class="recommendation-label">
+                    BRYGHTCENTRAL RECOMMENDATION
+                </p>
+
+                <h3>
+                    {{ recommendation.level }}
+                </h3>
+
+                <p>
+                    {{ recommendation.message }}
+                </p>
+
+            </div>
+
+            {% endif %}
+
+
+            <!-- =====================================
+                 RELEASE CARDS
+                 ===================================== -->
+
+            <div class="lifecycle-grid">
+
+                {% for release in
+                   lifecycle_data.results[:8] %}
+
+                <article
+                    class="lifecycle-card
+
+                    {% if (
+                        release.version|string
+                        == selected_version|string
+                    ) %}
+                    selected-release-card
+                    {% endif %}
+                    ">
+
+
+                    <div class="lifecycle-card-top">
+
+                        <span>
+                            {{ release.label }}
+                        </span>
+
+
+                        {% if release.is_maintained %}
+
+                        <span
+                            class="status-badge supported">
+
+                            Supported
+
+                        </span>
+
+                        {% else %}
+
+                        <span
+                            class="status-badge ended">
+
+                            Ended
+
+                        </span>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- CODENAME -->
+
+                    {% if release.codename %}
+
+                    <p class="release-codename">
+                        {{ release.codename }}
+                    </p>
+
+                    {% endif %}
+
+
+                    <div class="release-details">
+
+
+                        <!-- RELEASE DATE -->
+
+                        <p>
+
+                            <strong>
+                                Released:
+                            </strong>
+
+                            {{ release.release_date
+                               or "Unknown" }}
+
+                        </p>
+
+
+                        <!-- =================================
+                             macOS STYLE DATA
+                             ================================= -->
+
+                        {% if release.has_latest_details %}
+
+                        <p>
+
+                            <strong>
+                                Latest:
+                            </strong>
+
+                            {{ release.latest_version
+                               or "Unknown" }}
+
+                        </p>
+
+
+                        <p>
+
+                            <strong>
+                                Latest update:
+                            </strong>
+
+                            {{ release.latest_release_date
+                               or "Unknown" }}
+
+                        </p>
+
+
+                        <!-- =================================
+                             CHROME STYLE DATA
+                             ================================= -->
+
+                        {% else %}
+
+                        <p>
+
+                            <strong>
+                                Security support:
+                            </strong>
+
+
+                            {% if release.is_maintained %}
+
+                                Active
+
+                            {% else %}
+
+                                Ended
+
+                            {% endif %}
+
+                        </p>
+
+
+                        {% if release.eol_date %}
+
+                        <p>
+
+                            <strong>
+
+                                {% if release.is_eol %}
+
+                                    Support ended:
+
+                                {% else %}
+
+                                    Support ends:
+
+                                {% endif %}
+
+                            </strong>
+
+                            {{ release.eol_date }}
+
+                        </p>
+
+                        {% endif %}
+
+                        {% endif %}
+
+
+                        <!-- EOL -->
+
+                        <p>
+
+                            <strong>
+                                EOL:
+                            </strong>
+
+                            {% if release.is_eol %}
+
+                                Yes
+
+                            {% else %}
+
+                                No
+
+                            {% endif %}
+
+                        </p>
+
+                    </div>
+
+                </article>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+        {% endif %}
+
+    {% endif %}
+
+
+    <!-- =========================================
+         APPLE SCRAPED INFORMATION
+         ========================================= -->
+
+    {% if apple_data %}
+
+        {% if not apple_data.success %}
+
+        <div class="support-error">
+
+            <h2>
+                Apple Data Error
+            </h2>
+
+            <p>
+                {{ apple_data.error }}
+            </p>
+
+        </div>
+
+
+        {% else %}
+
+        <div class="support-section">
+
+            <div class="section-heading">
+
+                <div>
+
+                    <p class="eyebrow">
+                        SCRAPED WEB SOURCE
+                    </p>
+
+                    <h2>
+
+                        Apple Security Releases
+
+                        {% if (
+                            selected_release
+                            and selected_release.codename
+                        ) %}
+
+                            for
+                            {{ selected_release.codename }}
+
+                        {% endif %}
+
+                    </h2>
+
+                </div>
+
+
+                <span class="source-badge">
+                    Apple Support
+                </span>
+
+            </div>
+
+
+            <!-- MATCHING APPLE RESULTS -->
+
+            {% if apple_updates_for_release %}
+
+            <div class="security-list">
+
+                {% for update in
+                   apple_updates_for_release[:6] %}
+
+                <article class="security-card">
+
+                    <div class="security-card-header">
+
+                        <h3>
+                            {{ update.update_name }}
+                        </h3>
+
+                        <span>
+                            {{ update.release_date }}
+                        </span>
+
+                    </div>
+
+
+                    <p>
+
+                        <strong>
+                            Available for:
+                        </strong>
+
+                        {{ update.available_for }}
+
+                    </p>
+
+
+                    {% if update.information_link %}
+
+                    <a
+                        href="{{ update.information_link }}"
+                        target="_blank"
+                        rel="noopener noreferrer">
+
+                        View Apple Security Details
+
+                    </a>
+
+
+                    {% else %}
+
+                    <p class="no-link">
+
+                        No published CVE details linked
+                        by Apple.
+
+                    </p>
+
+                    {% endif %}
+
+                </article>
+
+                {% endfor %}
+
+            </div>
+
+
+            {% else %}
+
+            <div class="support-error">
+
+                <p>
+
+                    No matching Apple security releases
+                    were found for this macOS version.
+
+                </p>
+
+            </div>
+
+            {% endif %}
+
+
+            <p class="source-footer">
+
+                Source:
+
+                <a
+                    href="{{ apple_data.source_url }}"
+                    target="_blank"
+                    rel="noopener noreferrer">
+
+                    Apple Security Releases
+
+                </a>
+
+            </p>
+
+        </div>
+
+        {% endif %}
+
+    {% endif %}
+
+</section>
+
+{% endblock %}
