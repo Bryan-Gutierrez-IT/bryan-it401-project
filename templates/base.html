@@ -6,29 +6,44 @@
 
     <title>{% block title %}BryghtCentral{% endblock %}</title>
 
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='style.css') }}">
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
 </head>
 
 <body>
 
     <header>
         <nav class="navbar">
-            <a class="brand" href="{{ url_for('index') }}">
+
+            <a
+                class="brand"
+                href="{{ url_for('index') }}"
+            >
                 BryghtCentral
             </a>
 
             <div class="nav-links">
-                 <a href="{{ url_for('index') }}">
-                Home
+
+                <a href="{{ url_for('index') }}">
+                    Home
                 </a>
+
                 <a href="{{ url_for('assets') }}">
                     Asset Directory
                 </a>
+
                 <a href="{{ url_for('support_intelligence') }}">
                     Support Intelligence
                 </a>
+
+                <a href="{{ url_for('stored_releases') }}">
+                    Stored Records
+                </a>
+
             </div>
+
         </nav>
     </header>
 

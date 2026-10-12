@@ -464,3 +464,380 @@ footer {
     box-shadow: 0 4px 14px
         rgba(23, 32, 51, 0.08);
 }
+/* =========================================================
+   A3 - Persistent Lifecycle Records
+   ========================================================= */
+
+.support-page {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 48px 32px 70px;
+}
+
+.support-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+    margin-bottom: 30px;
+}
+
+.support-page-header h1 {
+    margin: 6px 0 10px;
+    color: #172033;
+    font-size: 2.3rem;
+}
+
+.support-page-header p {
+    max-width: 760px;
+}
+
+.eyebrow {
+    color: #397b69;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.database-summary {
+    background: white;
+    border: 1px solid #dfe5ea;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin: 20px 0;
+    color: #425466;
+}
+
+.database-summary strong {
+    color: #172033;
+    font-size: 1.2rem;
+}
+
+.records-toolbar {
+    background: white;
+    border: 1px solid #dfe5ea;
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.records-filter-form {
+    display: grid;
+    grid-template-columns:
+        minmax(220px, 2fr)
+        minmax(170px, 1fr)
+        minmax(150px, 1fr)
+        auto;
+    gap: 16px;
+    align-items: end;
+}
+
+.filter-field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.filter-field label {
+    color: #425466;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.filter-field input,
+.filter-field select {
+    min-height: 44px;
+    border: 1px solid #ccd5dd;
+    border-radius: 8px;
+    padding: 10px 12px;
+    background: white;
+    color: #172033;
+    font: inherit;
+}
+
+.filter-field input:focus,
+.filter-field select:focus {
+    outline: 2px solid rgba(
+        57,
+        123,
+        105,
+        0.18
+    );
+    border-color: #397b69;
+}
+
+.filter-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.stored-records-table-wrapper {
+    overflow-x: auto;
+    background: white;
+    border: 1px solid #dfe5ea;
+    border-radius: 14px;
+}
+
+.stored-records-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 900px;
+}
+
+.stored-records-table th {
+    text-align: left;
+    padding: 15px 14px;
+    background: #f4f7f9;
+    color: #425466;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-bottom: 1px solid #dfe5ea;
+}
+
+.stored-records-table td {
+    padding: 14px;
+    border-bottom: 1px solid #edf1f4;
+    color: #29384d;
+    vertical-align: middle;
+}
+
+.stored-records-table tbody tr:hover {
+    background: #f9fbfc;
+}
+
+.stored-records-table
+tbody
+tr:last-child
+td {
+    border-bottom: none;
+}
+
+.record-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.record-actions form {
+    margin: 0;
+}
+
+.primary-button,
+.secondary-button,
+.danger-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    border-radius: 8px;
+    padding: 9px 15px;
+    text-decoration: none;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.primary-button {
+    border: 1px solid #397b69;
+    background: #397b69;
+    color: white;
+}
+
+.primary-button:hover {
+    opacity: 0.9;
+}
+
+.secondary-button {
+    border: 1px solid #ccd5dd;
+    background: white;
+    color: #29384d;
+}
+
+.secondary-button:hover {
+    background: #f4f7f9;
+}
+
+.danger-button {
+    border: 1px solid #c55a5a;
+    background: white;
+    color: #a13e3e;
+}
+
+.danger-button:hover {
+    background: #fff4f4;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 9px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    background: #eef2f5;
+    color: #596777;
+}
+
+.status-active {
+    background: #e7f4ef;
+    color: #397b69;
+}
+
+.status-ended {
+    background: #fceaea;
+    color: #a13e3e;
+}
+
+.flash-message {
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin: 16px 0;
+    font-weight: 600;
+}
+
+.flash-message.success {
+    background: #e7f4ef;
+    border: 1px solid #add5c7;
+    color: #2e6758;
+}
+
+.flash-message.error {
+    background: #fff0f0;
+    border: 1px solid #e5bcbc;
+    color: #973d3d;
+}
+
+.lifecycle-record-form {
+    max-width: 850px;
+    background: white;
+    border: 1px solid #dfe5ea;
+    border-radius: 14px;
+    padding: 28px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.lifecycle-record-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    color: #425466;
+    font-weight: 600;
+}
+
+.lifecycle-record-form input,
+.lifecycle-record-form textarea {
+    border: 1px solid #ccd5dd;
+    border-radius: 8px;
+    padding: 11px 12px;
+    color: #172033;
+    background: white;
+    font: inherit;
+}
+
+.lifecycle-record-form input:focus,
+.lifecycle-record-form textarea:focus {
+    outline: 2px solid rgba(
+        57,
+        123,
+        105,
+        0.18
+    );
+    border-color: #397b69;
+}
+
+.lifecycle-record-form textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.lifecycle-record-form
+label:nth-child(2) {
+    grid-column: 1 / -1;
+}
+
+.checkbox-row {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 30px;
+}
+
+.checkbox-row label {
+    flex-direction: row;
+    align-items: center;
+}
+
+.form-actions {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+@media (max-width: 900px) {
+
+    .support-page-header {
+        flex-direction: column;
+    }
+
+    .records-filter-form {
+        grid-template-columns: 1fr;
+    }
+
+    .lifecycle-record-form {
+        grid-template-columns: 1fr;
+    }
+
+    .lifecycle-record-form
+    label:nth-child(2),
+    .checkbox-row,
+    .form-actions {
+        grid-column: auto;
+    }
+}
+.header-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.header-actions form {
+    margin: 0;
+}
+
+.persistence-note {
+    margin-bottom: 20px;
+    padding: 14px 18px;
+    border-left: 4px solid #397b69;
+    background: #eef7f4;
+    color: #425466;
+    border-radius: 8px;
+}
+
+.persistence-note strong {
+    color: #172033;
+}
+
+.persistence-note span {
+    display: block;
+    margin-top: 4px;
+}
+
+@media (max-width: 700px) {
+
+    .header-actions {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .header-actions form,
+    .header-actions button,
+    .header-actions a {
+        width: 100%;
+    }
+}

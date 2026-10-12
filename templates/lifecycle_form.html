@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="support-page">
+
+    <div class="support-page-header">
+
+        <div>
+
+            <p class="eyebrow">
+                DATABASE CRUD
+            </p>
+
+            <h1>
+                {{ form_title }}
+            </h1>
+
+            <p>
+                Create or update persistent
+                lifecycle information.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+
+            {% for category, message in messages %}
+
+                <div class="flash-message {{ category }}">
+                    {{ message }}
+                </div>
+
+            {% endfor %}
+
+        {% endif %}
+    {% endwith %}
+
+
+    <form
+        method="POST"
+        class="lifecycle-record-form"
+    >
+
+        <label>
+            Title *
+            <input
+                type="text"
+                name="title"
+                required
+                value="{{ record.title if record else '' }}"
+            >
+        </label>
+
+
+        <label>
+            Description *
+            <textarea
+                name="description"
+                required
+            >{{ record.description if record else '' }}</textarea>
+        </label>
+
+
+        <label>
+            Product *
+            <input
+                type="text"
+                name="product"
+                required
+                value="{{ record.product if record else '' }}"
+            >
+        </label>
+
+
+        <label>
+            Version *
+            <input
+                type="text"
+                name="version"
+                required
+                value="{{ record.version if record else '' }}"
+            >
+        </label>
+
+
+        <label>
+            Codename
+            <input
+                type="text"
+                name="codename"
+                value="{{ record.codename if record and record.codename else '' }}"
+            >
+        </label>
+
+
+        <label>
+            Source *
+            <input
+                type="text"
+                name="source"
+                required
+                value="{{ record.source if record else 'manual' }}"
+            >
+        </label>
+
+
+        <label>
+            Source URL *
+            <input
+                type="url"
+                name="source_url"
+                required
+                value="{{ record.source_url if record else '' }}"
+            >
+        </label>
+
+
+        <label>
+            External ID *
+            <input
+                type="text"
+                name="external_id"
+                required
+                value="{{ record.external_id if record else '' }}"
+            >
+        </label>
+
+
+        <label>
+            Release Date
+            <input
+                type="date"
+                name="release_date"
+                value="{% if record and record.release_date %}{{ record.release_date }}{% endif %}"
+            >
+        </label>
+
+
+        <label>
+            End-of-Life Date
+            <input
+                type="date"
+                name="eol_date"
+                value="{% if record and record.eol_date %}{{ record.eol_date }}{% endif %}"
+            >
+        </label>
+
+
+        <label>
+            Latest Version
+            <input
+                type="text"
+                name="latest_version"
+                value="{{ record.latest_version if record and record.latest_version else '' }}"
+            >
+        </label>
+
+
+        <label>
+            Latest Release Date
+            <input
+                type="date"
+                name="latest_release_date"
+                value="{% if record and record.latest_release_date %}{{ record.latest_release_date }}{% endif %}"
+            >
+        </label>
+
+
+        <div class="checkbox-row">
+
+            <label>
+                <input
+                    type="checkbox"
+                    name="is_maintained"
+                    {% if record and record.is_maintained %}
+                        checked
+                    {% endif %}
+                >
+                Maintained
+            </label>
+
+            <label>
+                <input
+                    type="checkbox"
+                    name="is_eol"
+                    {% if record and record.is_eol %}
+                        checked
+                    {% endif %}
+                >
+                End of Life
+            </label>
+
+        </div>
+
+
+        <div class="form-actions">
+
+            <button
+                type="submit"
+                class="primary-button"
+            >
+                Save Record
+            </button>
+
+            <a
+                href="{{ url_for('stored_releases') }}"
+                class="secondary-button"
+            >
+                Cancel
+            </a>
+
+        </div>
+
+    </form>
+
+</section>
+
+{% endblock %}

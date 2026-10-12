@@ -1,0 +1,421 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="support-page">
+
+    <div class="support-page-header">
+
+        <div>
+
+            <p class="eyebrow">
+                PERSISTENT INFORMATION
+            </p>
+
+            <h1>
+                Stored Lifecycle Records
+            </h1>
+
+            <p>
+                Lifecycle information acquired from
+                external sources and stored permanently
+                in the BryghtCentral MySQL database.
+            </p>
+
+        </div>
+
+        <div class="header-actions">
+
+            <form
+                action="{{ url_for('sync_stored_releases') }}"
+                method="POST"
+                onsubmit="
+                    return confirm(
+                        'Sync the latest macOS and Chrome lifecycle data?'
+                    );
+                "
+            >
+
+                <button
+                    type="submit"
+                    class="secondary-button"
+                >
+                    Sync Lifecycle Data
+                </button>
+
+            </form>
+
+            <a
+                href="{{ url_for('create_stored_release') }}"
+                class="primary-button"
+            >
+                Add Record
+            </a>
+
+        </div>
+
+    </div>
+
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+
+        {% if messages %}
+
+            {% for category, message in messages %}
+
+                <div
+                    class="flash-message {{ category }}"
+                >
+                    {{ message }}
+                </div>
+
+            {% endfor %}
+
+        {% endif %}
+
+    {% endwith %}
+
+
+    <div class="persistence-note">
+
+        <strong>
+            Persistent source:
+        </strong>
+
+        endoflife.date lifecycle information for
+        macOS and Google Chrome.
+
+        <span>
+            Re-syncing updates existing records
+            instead of creating duplicates.
+        </span>
+
+    </div>
+
+
+    <div class="records-toolbar">
+
+        <form
+            method="GET"
+            action="{{ url_for('stored_releases') }}"
+            class="records-filter-form"
+        >
+
+            <div class="filter-field">
+
+                <label for="search">
+                    Search
+                </label>
+
+                <input
+                    id="search"
+                    type="text"
+                    name="search"
+                    placeholder="Product, version, codename..."
+                    value="{{ search }}"
+                >
+
+            </div>
+
+
+            <div class="filter-field">
+
+                <label for="product">
+                    Product
+                </label>
+
+                <select
+                    id="product"
+                    name="product"
+                >
+
+                    <option value="">
+                        All Products
+                    </option>
+
+                    {% for product in products %}
+
+                        <option
+                            value="{{ product }}"
+                            {% if product_filter == product %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ product }}
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <div class="filter-field">
+
+                <label for="status">
+                    Status
+                </label>
+
+                <select
+                    id="status"
+                    name="status"
+                >
+
+                    <option value="">
+                        All Statuses
+                    </option>
+
+                    <option
+                        value="active"
+                        {% if status_filter == "active" %}
+                            selected
+                        {% endif %}
+                    >
+                        Active
+                    </option>
+
+                    <option
+                        value="ended"
+                        {% if status_filter == "ended" %}
+                            selected
+                        {% endif %}
+                    >
+                        Ended
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="filter-actions">
+
+                <button
+                    type="submit"
+                    class="primary-button"
+                >
+                    Filter Records
+                </button>
+
+                <a
+                    href="{{ url_for('stored_releases') }}"
+                    class="secondary-button"
+                >
+                    Clear
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+    <div class="database-summary">
+
+        {% if (
+            search
+            or product_filter
+            or status_filter
+        ) %}
+
+            <strong>
+                {{ records|length }}
+            </strong>
+
+            matching records out of
+
+            <strong>
+                {{ total_count }}
+            </strong>
+
+            stored in MySQL.
+
+        {% else %}
+
+            <strong>
+                {{ total_count }}
+            </strong>
+
+            records currently stored in MySQL.
+
+        {% endif %}
+
+    </div>
+
+
+    {% if records %}
+
+        <div
+            class="stored-records-table-wrapper"
+        >
+
+            <table
+                class="stored-records-table"
+            >
+
+                <thead>
+
+                    <tr>
+                        <th>ID</th>
+                        <th>Product</th>
+                        <th>Version</th>
+                        <th>Status</th>
+                        <th>Source</th>
+                        <th>Retrieved</th>
+                        <th>Actions</th>
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for record in records %}
+
+                        <tr>
+
+                            <td>
+                                {{ record.id }}
+                            </td>
+
+                            <td>
+                                {{ record.product }}
+                            </td>
+
+                            <td>
+                                {{ record.version }}
+                            </td>
+
+                            <td>
+
+                                {% if record.is_eol %}
+
+                                    <span
+                                        class="status-badge status-ended"
+                                    >
+                                        Ended
+                                    </span>
+
+                                {% elif record.is_maintained %}
+
+                                    <span
+                                        class="status-badge status-active"
+                                    >
+                                        Active
+                                    </span>
+
+                                {% else %}
+
+                                    <span
+                                        class="status-badge"
+                                    >
+                                        Unknown
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+                            <td>
+                                {{ record.source }}
+                            </td>
+
+                            <td>
+
+                                {% if record.retrieved_date %}
+
+                                    {{
+                                        record.retrieved_date.strftime(
+                                            "%Y-%m-%d"
+                                        )
+                                    }}
+
+                                {% else %}
+
+                                    —
+
+                                {% endif %}
+
+                            </td>
+
+                            <td
+                                class="record-actions"
+                            >
+
+                                <a
+                                    href="{{
+                                        url_for(
+                                            'edit_stored_release',
+                                            record_id=record.id
+                                        )
+                                    }}"
+                                    class="secondary-button"
+                                >
+                                    Edit
+                                </a>
+
+                                <form
+                                    action="{{
+                                        url_for(
+                                            'delete_stored_release',
+                                            record_id=record.id
+                                        )
+                                    }}"
+                                    method="POST"
+                                    onsubmit="
+                                        return confirm(
+                                            'Delete this lifecycle record?'
+                                        );
+                                    "
+                                >
+
+                                    <button
+                                        type="submit"
+                                        class="danger-button"
+                                    >
+                                        Delete
+                                    </button>
+
+                                </form>
+
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    {% else %}
+
+        <div class="support-error">
+
+            <h2>
+                No Records Found
+            </h2>
+
+            <p>
+                No lifecycle records matched
+                the current search or filters.
+            </p>
+
+            <a
+                href="{{ url_for('stored_releases') }}"
+                class="secondary-button"
+            >
+                Clear Filters
+            </a>
+
+        </div>
+
+    {% endif %}
+
+</section>
+
+{% endblock %}
