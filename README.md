@@ -1096,7 +1096,7 @@ bryan-it401-project/
 │   ├── script.py.mako
 │   └── versions/
 │       ├── 0772cbdf46e6_create_lifecycle_records_table.py
-│       └── <search-event migration>.py
+│       └── 4dece5aa8ef5_create_search_events_table.py
 │
 ├── models/
 │   ├── __init__.py
