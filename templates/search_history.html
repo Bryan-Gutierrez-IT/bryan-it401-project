@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}
+Search History | BryghtCentral
+{% endblock %}
+
+
+{% block content %}
+
+<section class="search-page">
+
+    <div class="search-page-header">
+
+        <div>
+
+            <p class="eyebrow">
+                SEARCH TELEMETRY
+            </p>
+
+            <h1>
+                Search History
+            </h1>
+
+            <p>
+                Recent BryghtCentral search activity
+                recorded for retrieval evaluation.
+            </p>
+
+        </div>
+
+        <a
+            href="{{ url_for('search') }}"
+            class="primary-button"
+        >
+            Back to Search
+        </a>
+
+    </div>
+
+
+    {% if history_error %}
+
+        <div class="search-error">
+
+            <h2>
+                Telemetry Unavailable
+            </h2>
+
+            <p>
+                {{ history_error }}
+            </p>
+
+        </div>
+
+
+    {% elif not events %}
+
+        <div class="search-empty-state">
+
+            <h2>
+                No Search History Yet
+            </h2>
+
+            <p>
+                Completed searches will appear here.
+            </p>
+
+        </div>
+
+
+    {% else %}
+
+        <div class="database-summary">
+
+            <strong>
+                {{ total_events }}
+            </strong>
+
+            search events recorded.
+
+            <span>
+                Showing the 50 most recent events.
+            </span>
+
+        </div>
+
+
+        <div class="search-history-wrapper">
+
+            <table class="search-history-table">
+
+                <thead>
+
+                    <tr>
+                        <th>Query</th>
+                        <th>Product</th>
+                        <th>Status</th>
+                        <th>Sort</th>
+                        <th>Results</th>
+                        <th>No Results</th>
+                        <th>Searched At</th>
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for event in events %}
+
+                        <tr>
+
+                            <td>
+                                {{ event.query }}
+                            </td>
+
+                            <td>
+                                {{ event.product_filter or "All" }}
+                            </td>
+
+                            <td>
+                                {{ event.status_filter or "All" }}
+                            </td>
+
+                            <td>
+                                {{ event.sort_option|title }}
+                            </td>
+
+                            <td>
+                                {{ event.result_count }}
+                            </td>
+
+                            <td>
+
+                                {% if event.no_results %}
+
+                                    Yes
+
+                                {% else %}
+
+                                    No
+
+                                {% endif %}
+
+                            </td>
+
+                            <td>
+
+                                {{
+                                    event.searched_at.strftime(
+                                        "%Y-%m-%d %H:%M:%S"
+                                    )
+                                }}
+
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    {% endif %}
+
+</section>
+
+{% endblock %}

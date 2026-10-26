@@ -6,7 +6,13 @@ from flask import Flask
 
 from extensions import db, migrate
 from routes.main import register_routes
-from routes.lifecycle_records import register_lifecycle_routes
+from routes.lifecycle_records import (
+    register_lifecycle_routes
+)
+from routes.search import (
+    register_search_routes
+)
+
 
 load_dotenv()
 
@@ -14,23 +20,33 @@ load_dotenv()
 def create_app():
 
     app = Flask(__name__)
-    
+
     app.config["SECRET_KEY"] = os.getenv(
         "SECRET_KEY",
         "dev-secret-key"
     )
 
-    db_username = os.getenv("DB_USERNAME")
-    db_password = os.getenv("DB_PASSWORD")
+    db_username = os.getenv(
+        "DB_USERNAME"
+    )
+
+    db_password = os.getenv(
+        "DB_PASSWORD"
+    )
+
     db_host = os.getenv(
         "DB_HOST",
         "127.0.0.1"
     )
+
     db_port = os.getenv(
         "DB_PORT",
         "3307"
     )
-    db_name = os.getenv("DB_NAME")
+
+    db_name = os.getenv(
+        "DB_NAME"
+    )
 
     required_values = {
         "DB_USERNAME": db_username,
@@ -46,10 +62,13 @@ def create_app():
     ]
 
     if missing_values:
+
         raise RuntimeError(
             "Missing required database "
             "environment variables: "
-            + ", ".join(missing_values)
+            + ", ".join(
+                missing_values
+            )
         )
 
     database_uri = (
@@ -69,6 +88,13 @@ def create_app():
         "SQLALCHEMY_TRACK_MODIFICATIONS"
     ] = False
 
+    app.config[
+        "SQLALCHEMY_ENGINE_OPTIONS"
+    ] = {
+        "pool_pre_ping": True,
+        "pool_recycle": 280
+    }
+
     db.init_app(app)
 
     migrate.init_app(
@@ -77,10 +103,21 @@ def create_app():
     )
 
     register_routes(app)
-    register_lifecycle_routes(app)
+
+    register_lifecycle_routes(
+        app
+    )
+
+    register_search_routes(
+        app
+    )
+
     # Import models so SQLAlchemy and
     # Flask-Migrate can discover them.
-    from models import LifecycleRecord
+    from models import (
+        LifecycleRecord,
+        SearchEvent
+    )
 
     return app
 
@@ -89,4 +126,7 @@ app = create_app()
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+
+    app.run(
+        debug=True
+    )

@@ -1,140 +1,127 @@
 # BryghtCentral
 
 **Student:** Bryan Gutierrez  
-**Course:** IT 401 - Web Intelligence  
-**Assignment:** A3 - Expanding the Web Intelligence Application with Information Persistence  
+**Course:** IT401 — Web Intelligence  
+**Assignment:** A4 — Expanding the Web Intelligence Application with Search
 
 ---
 
 ## Project Overview
 
-BryghtCentral is an IT operations intelligence application designed to help IT teams organize, retrieve, and analyze information about technology assets and the software they depend on.
+BryghtCentral is an IT operations intelligence application built with Flask. The project is designed as a centralized interface for viewing organizational assets, checking software lifecycle information, storing externally acquired information, and retrieving relevant records from a persistent database.
 
-The original A1 version introduced a local Asset Directory containing device, employee, department, location, and status information.
+The application has grown across the IT401 assignments:
 
-A2 expanded BryghtCentral by acquiring current information from external sources. The application retrieves product lifecycle information from the endoflife.date API and scrapes Apple's public Security Releases webpage.
+- **A1:** Established the BryghtCentral application and Asset Directory.
+- **A2:** Added external information acquisition using an API and web scraping.
+- **A3:** Added MySQL persistence, SQLAlchemy models, database migrations, and CRUD functionality.
+- **A4:** Adds information retrieval through keyword search, Boolean filtering, relevance ranking, sorting, pagination, search telemetry, and retrieval evaluation.
 
-A3 adds **information persistence**. Lifecycle information acquired from endoflife.date can now be stored permanently in a MySQL database using Flask-SQLAlchemy.
+BryghtCentral is intended for IT support technicians, administrators, and other technical staff who need to quickly determine software lifecycle status and locate useful support information.
 
-Instead of losing all acquired information when a request ends, BryghtCentral can now:
-
-- Store lifecycle records permanently
-- Retrieve stored records from MySQL
-- Search and filter database records
-- Create records through the web interface
-- Update existing records
-- Delete records
-- Synchronize current API information with the database
-- Prevent duplicate external records
-- Validate information before it is stored
-
-The long-term purpose of BryghtCentral is to help IT staff make better operational decisions about technology assets, software support, lifecycle status, and upgrade requirements.
+The A4 search system improves the application by allowing users to retrieve relevant lifecycle records instead of manually browsing all stored database entries.
 
 ---
 
-## Intended Users
+# Current Application Features
 
-BryghtCentral is designed primarily for:
+BryghtCentral currently includes:
 
-- IT support staff
-- Help desk technicians
-- System administrators
-- IT operations teams
-- Asset management personnel
-
-These users may need to determine whether software remains supported, identify outdated versions, track technology lifecycle information, and eventually connect that information with organizational assets.
+- Homepage and application navigation
+- Asset Directory
+- Asset searching and filtering
+- External API integration
+- Web scraping
+- Support Intelligence interface
+- Software lifecycle recommendations
+- MySQL database persistence
+- SQLAlchemy ORM models
+- Flask-Migrate database migrations
+- Create, Read, Update, and Delete operations
+- Duplicate prevention
+- Data validation
+- Stored-record browsing
+- Keyword search
+- Multi-field retrieval
+- Product filtering
+- Lifecycle-status filtering
+- Relevance ranking
+- Multiple sorting options
+- Pagination
+- Search-state preservation
+- Search telemetry
+- Search-history interface
+- Helpful no-results states
+- Database and search error handling
 
 ---
 
-# Information Persistence
+# Information Sources
 
-## What Is Stored Permanently
+BryghtCentral currently acquires external information from two primary sources.
 
-A3 persists lifecycle information acquired from the **endoflife.date API**.
+## endoflife.date API
 
-The persistent dataset currently includes lifecycle records for:
+Lifecycle information for:
 
 - Apple macOS
 - Google Chrome
 
-Each lifecycle release is transformed into a `LifecycleRecord` object and stored in the MySQL database.
+is retrieved from the endoflife.date API.
 
-During A3 testing, BryghtCentral stored:
-
-```text
-171 lifecycle records
-```
-
-These included macOS and Google Chrome release records.
-
-Stored information includes:
+This information includes fields such as:
 
 - Product
 - Version
 - Codename
 - Release date
-- Maintained status
+- Maintenance status
 - End-of-life status
 - End-of-life date
 - Latest version
 - Latest release date
-- Source
-- Source URL
-- External identifier
-- Retrieved date
-- Created date
-- Description
 
-Persisting this information allows BryghtCentral to reuse previously acquired data instead of relying only on temporary API responses.
+The lifecycle information acquired through the API is permanently stored in MySQL.
 
----
+## Apple Security Releases
 
-## Why Lifecycle Information Is Persisted
+BryghtCentral also scrapes Apple's public security-release page to obtain information related to Apple software security updates.
 
-Lifecycle information is useful beyond the request that originally retrieved it.
-
-Persisting it allows BryghtCentral to:
-
-- Retain information after the application stops
-- Reduce unnecessary external API requests
-- Search previously acquired lifecycle information
-- Compare lifecycle records
-- Track information from external sources
-- Support future retrieval and ranking features
-- Build future intelligent recommendations
-- Maintain a foundation for later decision-support features
-
-The stored information also provides historical context that would not exist if every API result disappeared after the request ended.
+This scraped information is used by the Support Intelligence feature and is currently retrieved when needed rather than permanently stored.
 
 ---
 
-## Information That Remains Temporary
+# Information Persistence
 
-Not all BryghtCentral information is persisted yet.
+A3 introduced permanent information storage using MySQL and Flask-SQLAlchemy.
 
-The following currently remains temporary or outside the MySQL persistence layer:
+Lifecycle information from endoflife.date is stored in the `lifecycle_records` table.
 
-### Apple Security Releases
+The current database contains approximately:
 
-Apple security-release information is still retrieved dynamically by scraping Apple's public Security Releases webpage.
+- **23 Apple macOS lifecycle records**
+- **148 Google Chrome lifecycle records**
+- **171 lifecycle records total**
 
-This information is displayed through the Support Intelligence interface but is not currently stored in MySQL.
+Persisting this information allows BryghtCentral to search and retrieve lifecycle data without calling the external API for every user search.
 
-### User Search State
-
-Search text, filters, and the currently selected Support Intelligence product/version exist only for the current request.
-
-### Asset Directory
-
-The original Asset Directory continues to use:
+This creates the following flow:
 
 ```text
-data/assets.json
+External API
+     ↓
+Data Acquisition
+     ↓
+Validation
+     ↓
+MySQL Persistence
+     ↓
+Search and Retrieval
+     ↓
+User Interface
 ```
 
-Asset information has not yet been migrated into MySQL.
-
-This allows A3 to remain focused on persisting one externally acquired dataset while preparing the project for later expansion.
+The search functionality introduced in A4 operates on the information already stored in MySQL.
 
 ---
 
@@ -144,627 +131,944 @@ BryghtCentral uses the following persistence stack:
 
 ```text
 Flask
-   ↓
+  ↓
 Flask-SQLAlchemy
-   ↓
+  ↓
 SQLAlchemy ORM
-   ↓
+  ↓
 PyMySQL
-   ↓
-MySQL / MariaDB-compatible database on CI Keys
+  ↓
+MySQL / MariaDB-Compatible CI Keys Database
 ```
 
-Flask handles the web application.
+During local development, the application connects to the remote CI Keys database through an SSH tunnel.
 
-Flask-SQLAlchemy integrates SQLAlchemy with Flask.
+```text
+Local Flask Application
+        ↓
+127.0.0.1:3307
+        ↓
+SSH Tunnel
+        ↓
+CI Keys Server
+        ↓
+MySQL :3306
+```
 
-SQLAlchemy maps Python model objects to relational database records.
-
-PyMySQL provides the database driver.
-
-The database is hosted through CI Keys.
-
-During local development, BryghtCentral connects to the CI Keys database through an SSH tunnel.
+Database credentials are stored in a local `.env` file and are not committed to Git.
 
 ---
 
 # Database Schema
 
+A4 uses two primary SQLAlchemy models.
+
+---
+
 ## LifecycleRecord
 
-The main A3 table is:
+**Table:** `lifecycle_records`
 
-```text
-lifecycle_records
-```
-
-### Purpose
-
+**Purpose:**  
 Stores lifecycle information acquired from endoflife.date.
 
-### Primary Key
-
-```text
-id
-```
-
-The `id` field is BryghtCentral's internal database identifier.
-
-### Required Assignment Fields
-
-The model includes the required A3 information-model fields:
-
-| Field | Purpose |
+| Attribute | Purpose |
 |---|---|
 | `id` | Internal primary key |
 | `title` | Human-readable record title |
 | `description` | Description of the lifecycle record |
-| `source` | External information source |
-| `source_url` | URL associated with the source |
-| `retrieved_date` | Date/time information was retrieved |
-| `created_date` | Date/time the database record was created |
-
-### Additional BryghtCentral Fields
-
-| Field | Purpose |
-|---|---|
-| `product` | Product represented by the record |
-| `version` | Product release/version |
-| `codename` | Release codename when available |
-| `release_date` | Original release date |
+| `source` | Information source |
+| `source_url` | Original source URL |
+| `retrieved_date` | Date and time information was retrieved |
+| `created_date` | Date and time database record was created |
+| `product` | Product name |
+| `version` | Product version |
+| `codename` | Optional product codename |
+| `release_date` | Product release date |
 | `is_maintained` | Whether the release is actively maintained |
 | `is_eol` | Whether the release has reached end of life |
-| `eol_date` | End-of-life date when available |
-| `latest_version` | Most recent version information supplied by the source |
-| `latest_release_date` | Latest release/update date when available |
-| `external_id` | BryghtCentral identifier for an external release |
+| `eol_date` | Known end-of-life date |
+| `latest_version` | Latest available version |
+| `latest_release_date` | Date of latest available release |
+| `external_id` | Identifier derived from the external source |
 
-These additional attributes are required because BryghtCentral uses lifecycle status to determine whether software is supported or should be considered for an upgrade.
+### Duplicate Prevention
 
----
-
-## Duplicate Constraint
-
-BryghtCentral uses the combination:
+Lifecycle records use a unique constraint based on:
 
 ```text
 source + external_id
 ```
 
-as a unique database constraint.
+This prevents synchronization from creating duplicate records.
+
+When lifecycle data is synchronized again, existing records are updated rather than duplicated.
+
+---
+
+## SearchEvent
+
+**Table:** `search_events`
+
+**Purpose:**  
+Stores basic telemetry for completed searches.
+
+| Attribute | Purpose |
+|---|---|
+| `id` | Primary key |
+| `query` | Original query entered by the user |
+| `normalized_query` | Processed lowercase query |
+| `product_filter` | Product filter used |
+| `status_filter` | Status filter used |
+| `sort_option` | Selected result ordering |
+| `result_count` | Number of records matching the search |
+| `no_results` | Indicates whether the search returned zero results |
+| `searched_at` | Date and time the search occurred |
+
+The current schema can be summarized as:
+
+```text
+LifecycleRecord
+────────────────────────────
+PK  id
+    title
+    description
+    source
+    source_url
+    retrieved_date
+    created_date
+    product
+    version
+    codename
+    release_date
+    is_maintained
+    is_eol
+    eol_date
+    latest_version
+    latest_release_date
+    external_id
+
+
+SearchEvent
+────────────────────────────
+PK  id
+    query
+    normalized_query
+    product_filter
+    status_filter
+    sort_option
+    result_count
+    no_results
+    searched_at
+```
+
+The two tables currently do not require a direct foreign-key relationship. Search telemetry describes retrieval activity across the lifecycle collection rather than an individual record.
+
+---
+
+# Search and Retrieval Features
+
+A4 transforms BryghtCentral from a database browsing application into a searchable information system.
+
+The primary search interface is available at:
+
+```text
+/search
+```
+
+Searches use HTTP GET requests.
+
+Example:
+
+```text
+/search?q=Ventura&product=&status=&sort=relevance
+```
+
+Using GET requests allows searches to:
+
+- Remain visible in the URL
+- Be bookmarked
+- Be shared
+- Preserve search state during navigation
+- Preserve filters and sorting during pagination
+
+---
+
+# Searchable Information
+
+The primary searchable model is:
+
+```text
+LifecycleRecord
+```
+
+The following fields are searched:
+
+- `title`
+- `description`
+- `product`
+- `version`
+- `codename`
+
+These fields were selected because they contain information a technician is likely to know when looking for a lifecycle record.
+
+For example, a technician may search for:
+
+```text
+Ventura
+```
+
+without knowing that Ventura corresponds to macOS 13.
+
+Likewise:
+
+```text
+Chrome 153
+```
+
+can match both the product and version information.
+
+Fields such as dates and lifecycle Boolean values are not treated as free-text search fields because they work better as sorting criteria or structured filters.
+
+---
+
+# Query Processing
+
+Before database retrieval occurs, the user's query is processed.
+
+BryghtCentral currently performs the following steps:
+
+1. Preserves the original query for display.
+2. Removes unnecessary leading and trailing whitespace.
+3. Collapses repeated internal whitespace.
+4. Converts the normalized query to lowercase.
+5. Breaks the query into whitespace-separated tokens.
+6. Rejects empty queries.
+7. Rejects queries longer than 200 characters.
+8. Uses SQLAlchemy expressions rather than manually inserting raw input into SQL.
+
+Example:
+
+```text
+Original Query:
+   Chrome   153
+
+Normalized Query:
+chrome 153
+
+Tokens:
+chrome
+153
+```
+
+This represents a basic form of tokenization and normalization.
+
+The original user query is still displayed in the interface while the normalized form is used for consistent comparison.
+
+---
+
+# Multi-Field Retrieval
+
+Search queries are matched against multiple fields using SQLAlchemy.
+
+Conceptually:
+
+```text
+Query
+  ↓
+title
+OR description
+OR product
+OR version
+OR codename
+```
+
+For multi-token queries, each query term must appear somewhere within the searchable fields.
 
 For example:
 
 ```text
-source = endoflife.date
-external_id = macos:27
+Chrome 153
 ```
 
-cannot appear twice.
+requires both:
 
-This prevents repeated synchronization from creating duplicate copies of the same external lifecycle record.
+```text
+Chrome
+AND
+153
+```
+
+to appear within the searchable lifecycle record.
+
+This improves retrieval precision compared with searching only one database field.
 
 ---
 
-## Entity Relationship Diagram
+# Boolean Filtering
 
-A3 currently uses one primary persistent entity.
+BryghtCentral provides two optional structured filters.
+
+## Product Filter
+
+Users may select:
 
 ```text
-┌──────────────────────────────┐
-│       LifecycleRecord        │
-├──────────────────────────────┤
-│ PK  id                       │
-│     title                    │
-│     description              │
-│     source                   │
-│     source_url               │
-│     retrieved_date           │
-│     created_date             │
-│     product                  │
-│     version                  │
-│     codename                 │
-│     release_date             │
-│     is_maintained            │
-│     is_eol                   │
-│     eol_date                 │
-│     latest_version           │
-│     latest_release_date      │
-│     external_id              │
-├──────────────────────────────┤
-│ UNIQUE(source, external_id)  │
-└──────────────────────────────┘
+All Products
+Apple macOS
+Google Chrome
 ```
 
-No table relationships are required in the current A3 implementation.
+The available product values are read from the stored database records.
 
-Future versions may introduce relationships between lifecycle information, assets, employees, software assignments, and locations.
+## Status Filter
+
+Users may select:
+
+```text
+All Statuses
+Active
+Ended
+Unknown
+```
+
+The filters are combined with the keyword query.
+
+Conceptually:
+
+```text
+keyword
+AND product
+AND lifecycle status
+```
+
+Example:
+
+```text
+Chrome
+AND Google Chrome
+AND Ended
+```
+
+Filters can be removed or changed directly from the interface.
 
 ---
 
-# Application Architecture
+# Sorting Options
 
-BryghtCentral now separates application responsibilities across multiple files and directories.
+BryghtCentral provides four result-ordering options.
 
-```text
-Browser / User
-      │
-      ▼
-Flask Routes
-      │
-      ├───────────────► Templates
-      │
-      ▼
-Services / Business Logic
-      │
-      ├───────────────► endoflife.date API
-      │
-      ├───────────────► Apple Support Webpage
-      │
-      ▼
-Validation / Normalization
-      │
-      ▼
-SQLAlchemy Models
-      │
-      ▼
-Flask-SQLAlchemy
-      │
-      ▼
-MySQL Database
-```
+## Relevance
 
-The application no longer depends on a single file for all functionality.
+Orders results according to the application's custom relevance score.
 
-Major responsibilities are separated into:
+## Newest First
 
-- Application initialization
-- Database extensions
-- Models
-- Routes
-- External acquisition services
-- Persistence services
-- Templates
-- Static files
+Orders results using release date in descending order.
+
+## Oldest First
+
+Orders results using release date in ascending order.
+
+## Alphabetical
+
+Orders results by product and version.
 
 ---
 
-# Information Flow
+# Relevance Ranking
 
-## External Lifecycle Synchronization
+BryghtCentral uses a transparent rule-based relevance score.
 
-The A3 synchronization process follows this workflow:
+The ranking strategy gives stronger weight to matches in fields that more directly identify a release.
+
+Conceptual weighting:
 
 ```text
-User
-  │
-  │ clicks "Sync Lifecycle Data"
-  ▼
-Flask Route
-  │
-  ▼
-Lifecycle Persistence Service
-  │
-  ▼
-endoflife.date API
-  │
-  │ JSON
-  ▼
-Lifecycle API Processing
-  │
-  ▼
-Validation and Normalization
-  │
-  ▼
-Check Existing Record
-  │
-  ├──── record exists ───► UPDATE
-  │
-  └──── new record ──────► CREATE
-  │
-  ▼
-SQLAlchemy Session
-  │
-  ▼
-MySQL
-  │
-  ▼
-Stored Records Page
+Exact title match        +10
+Exact product match       +9
+Exact codename match      +8
+Exact version match       +7
+
+Partial title match       +5
+Partial product match     +4
+Partial codename match    +4
+Partial version match     +4
+Description match         +1
+```
+
+Individual query tokens may also contribute additional relevance points.
+
+A small boost is also given to currently maintained releases.
+
+This strategy is appropriate for BryghtCentral because lifecycle records have clearly structured identifying fields.
+
+A match in:
+
+```text
+product
+version
+codename
+```
+
+is generally more useful than the same word appearing only in a longer description.
+
+For example:
+
+```text
+Search: Ventura
+```
+
+returns:
+
+```text
+Apple macOS
+Version 13
+Codename Ventura
+```
+
+as the highest and only result.
+
+---
+
+# Retrieval Workflow
+
+The complete A4 search workflow is:
+
+```text
+User enters search query
+          ↓
+Flask receives GET request
+          ↓
+Query is normalized
+          ↓
+Query is tokenized
+          ↓
+SQLAlchemy builds retrieval statement
+          ↓
+Search multiple LifecycleRecord fields
+          ↓
+Apply product filter
+          ↓
+Apply lifecycle-status filter
+          ↓
+Calculate relevance score
+          ↓
+Apply selected sorting strategy
+          ↓
+Paginate results
+          ↓
+Render Jinja results template
+          ↓
+Record SearchEvent telemetry
+```
+
+The retrieval sequence follows:
+
+```text
+Retrieve
+   ↓
+Filter
+   ↓
+Rank
+   ↓
+Paginate
+   ↓
+Display
 ```
 
 ---
 
-## Duplicate-Safe Synchronization
+# Pagination
 
-When the synchronization button is used, BryghtCentral checks whether each external record already exists.
-
-If it does not exist:
+Search results are limited to:
 
 ```text
-CREATE record
+15 results per page
 ```
 
-If it already exists:
+This prevents the application from rendering the entire result collection at once.
+
+Pagination displays:
+
+- Previous navigation
+- Next navigation
+- Current page
+- Total pages
+- Current result range
+- Total result count
+
+Example:
 
 ```text
-UPDATE existing record
+Showing 16–30 of 148 results
+Page 2 of 10
 ```
 
-During testing, running synchronization against the existing dataset produced:
+Pagination links preserve:
 
 ```text
-Created 0 records
-Updated 171 records
+query
+product filter
+status filter
+sort selection
+page
 ```
 
-The total remained:
+Example:
 
 ```text
-171 records
+/search?q=Chrome&product=&status=&sort=relevance&page=2
 ```
 
-This confirms that synchronization updates existing information instead of creating duplicates.
+This prevents the user's search state from being lost while navigating between pages.
+
+---
+
+# Results Presentation
+
+Each search result displays information intended to help a technician quickly determine whether the record is useful.
+
+Displayed fields include:
+
+- Product
+- Version
+- Codename when available
+- Lifecycle status
+- Record title
+- Description
+- Source
+- Release date
+- Relevance score
+- Link to the original source
+
+BryghtCentral distinguishes among several retrieval states.
+
+## Before Searching
+
+```text
+Enter a keyword or phrase to begin.
+```
+
+## Results Found
+
+Example:
+
+```text
+Results for "Chrome"
+
+Showing 1–15 of 148 results.
+```
+
+## No Results
+
+Example:
+
+```text
+No Results Found
+
+No matching records were found for "potato123xyz".
+
+Try a broader term or remove one of the filters.
+```
+
+## Search Error
+
+If database retrieval fails, the application displays a user-friendly message instead of exposing a full traceback.
+
+---
+
+# Search Telemetry
+
+A4 adds search telemetry using the `SearchEvent` model.
+
+Each completed first-page search records:
+
+- Original query
+- Normalized query
+- Product filter
+- Status filter
+- Sorting option
+- Total result count
+- Whether zero results were returned
+- Search date and time
+
+Pagination requests do not create additional telemetry events for the same search.
+
+This prevents a user clicking:
+
+```text
+Page 1
+Page 2
+Page 3
+```
+
+from being counted as three separate searches.
+
+The telemetry interface is available at:
+
+```text
+/search-history
+```
+
+The Search History page displays up to the 50 most recent events.
+
+Telemetry could later help BryghtCentral identify:
+
+- Common search terms
+- Frequently used filters
+- Searches that return no results
+- Searches that may need synonyms
+- Popular product families
+- Search behavior that could improve recommendations
+- Opportunities for better relevance ranking
+
+BryghtCentral currently does not store sensitive personal information in search telemetry.
+
+---
+
+# Search Evaluation
+
+Five test queries were used to evaluate BryghtCentral's retrieval quality.
+
+| Query | Expected Relevant Records | Results Returned | Ranking Observation |
+|---|---|---:|---|
+| `Ventura` | Apple macOS 13 Ventura | 1 | Expected record ranked first |
+| `Chrome 153` | Google Chrome 153 | 1 | Exact version returned as the only result |
+| `Sequoia` | Apple macOS 15 Sequoia | 1 | Expected record ranked first |
+| `macOS` | Stored Apple macOS lifecycle records | 23 | Current and recent macOS releases appeared near the top |
+| `Chrome` | Stored Google Chrome lifecycle records | 148 | Chrome 155 appeared first followed by recent versions |
+
+## Detailed Results
+
+### Query 1 — Ventura
+
+Expected:
+
+```text
+Apple macOS 13
+Codename: Ventura
+```
+
+Actual:
+
+```text
+1 result
+Relevance score: 14
+Apple macOS 13 — Ventura
+```
+
+No obvious false positives were returned.
+
+The expected relevant record was not missed.
+
+**Precision observation:** Excellent. The only returned result was useful.
+
+**Recall observation:** Strong. The expected record was successfully retrieved.
+
+---
+
+### Query 2 — Chrome 153
+
+Expected:
+
+```text
+Google Chrome 153
+```
+
+Actual:
+
+```text
+1 result
+Relevance score: 18
+Google Chrome 153
+```
+
+No obvious false positives were returned.
+
+The expected record was not missed.
+
+**Precision observation:** Excellent.
+
+**Recall observation:** Strong.
+
+---
+
+### Query 3 — Sequoia
+
+Expected:
+
+```text
+Apple macOS 15
+Codename: Sequoia
+```
+
+Actual:
+
+```text
+1 result
+Relevance score: 15
+Apple macOS 15 — Sequoia
+```
+
+No obvious false positives were returned.
+
+The expected record was not missed.
+
+**Precision observation:** Excellent.
+
+**Recall observation:** Strong.
+
+---
+
+### Query 4 — macOS
+
+Expected:
+
+```text
+Apple macOS lifecycle records
+```
+
+Actual:
+
+```text
+23 results
+```
+
+Top results included:
+
+```text
+macOS 27 — Golden Gate
+macOS 26 — Tahoe
+macOS 15 — Sequoia
+macOS 14 — Sonoma
+macOS 13 — Ventura
+```
+
+The returned records belonged to the expected macOS product family.
+
+**Precision observation:** High because the results were relevant to the requested product.
+
+**Recall observation:** Strong within the current lifecycle dataset because the stored macOS collection was retrieved.
+
+---
+
+### Query 5 — Chrome
+
+Expected:
+
+```text
+Google Chrome lifecycle records
+```
+
+Actual:
+
+```text
+148 results
+```
+
+Top results included:
+
+```text
+Chrome 155
+Chrome 154
+Chrome 153
+Chrome 152
+Chrome 151
+```
+
+The most current Chrome release appeared first.
+
+**Precision observation:** High because returned records belonged to Google Chrome.
+
+**Recall observation:** Strong within the current stored Chrome collection.
+
+---
+
+# Evaluation Summary
+
+The five test queries demonstrated strong retrieval quality for the current dataset.
+
+Specific queries such as:
+
+```text
+Ventura
+Chrome 153
+Sequoia
+```
+
+returned exactly one highly relevant record.
+
+Broader product queries such as:
+
+```text
+macOS
+Chrome
+```
+
+returned their expected product collections without obvious false positives.
+
+The rule-based relevance strategy successfully placed current or recent records near the top when several records had similar textual relevance.
+
+Formal mathematical precision and recall calculations were not required for this evaluation, so they are discussed qualitatively.
+
+One future improvement would be adding synonym-aware or semantic retrieval. The current system depends primarily on stored text matching and does not understand that two different words may represent related concepts.
+
+---
+
+# Reliability and Error Handling
+
+BryghtCentral handles common search failures gracefully.
+
+## Empty Query
+
+An empty query does not execute a normal search.
+
+The user receives:
+
+```text
+Enter a keyword or phrase to begin searching.
+```
+
+## Very Long Query
+
+Queries longer than 200 characters are rejected.
+
+## Invalid Product Filter
+
+Product values are validated against products stored in the database.
+
+Invalid product filters are rejected.
+
+## Invalid Status Filter
+
+Only supported lifecycle states are accepted.
+
+## Invalid Sorting Option
+
+Unsupported sorting values are rejected.
+
+## Invalid Page Number
+
+Invalid or negative page values are normalized to a valid page.
+
+If a requested page is beyond the available result set, BryghtCentral displays the final valid page.
+
+## No Results
+
+A zero-result search produces a helpful user-facing message with suggestions to broaden the query or remove filters.
+
+## Database Failure
+
+Database exceptions are caught and the SQLAlchemy session is rolled back where appropriate.
+
+Users receive a helpful search-unavailable message rather than a raw database traceback.
+
+## Telemetry Failure
+
+Search telemetry is intentionally separated from retrieval.
+
+If saving a `SearchEvent` fails:
+
+- The database transaction is rolled back.
+- Search results may still be displayed.
+- The user receives a telemetry warning instead of losing the search results.
 
 ---
 
 # CRUD Functionality
 
-A3 provides complete CRUD functionality through the web interface.
+A3 CRUD functionality remains available in A4.
+
+Users can:
 
 ## Create
 
-Users can select:
+Manually create a lifecycle record.
 
-```text
-Add Record
-```
-
-and manually create a lifecycle record.
-
-Required fields are validated before the record is accepted.
-
----
+Required values are validated before insertion.
 
 ## Read
 
-The Stored Records page retrieves persistent information directly from MySQL.
-
-```text
-/stored-releases
-```
-
-The interface displays:
-
-- Record ID
-- Product
-- Version
-- Lifecycle status
-- Source
-- Retrieved date
-- Edit action
-- Delete action
-
----
+View persisted lifecycle records through the Stored Records interface.
 
 ## Update
 
-Each record includes an:
-
-```text
-Edit
-```
-
-action.
-
-Users can modify stored lifecycle information and save the changes back to MySQL.
-
----
+Modify an existing lifecycle record.
 
 ## Delete
 
-Each record includes a:
+Remove a stored lifecycle record.
 
-```text
-Delete
-```
-
-action.
-
-The browser requests confirmation before the record is removed.
-
-If the operation succeeds, the database transaction is committed.
-
-If it fails, the transaction is rolled back.
-
----
-
-# Search and Filtering
-
-Stored lifecycle information can be searched and filtered without modifying application source code.
-
-The Stored Records page supports:
-
-### Text Search
-
-Searchable fields include:
-
-- Title
-- Product
-- Version
-- Codename
-- Source
-
-### Product Filter
-
-Records can be filtered by product.
-
-Examples include:
-
-```text
-Apple macOS
-Google Chrome
-```
-
-### Status Filter
-
-Lifecycle records can be filtered by:
-
-```text
-Active
-Ended
-```
-
-The interface also displays the number of matching records compared with the total number stored.
-
----
-
-# Data Validation
-
-BryghtCentral validates information before storing or updating database records.
-
-Validation includes:
-
-- Required field checking
-- URL validation
-- Date parsing
-- Missing-value handling
-- Duplicate detection
-- Database uniqueness enforcement
-- Invalid input rejection
-
----
-
-## Required Fields
-
-The following fields are required when creating or updating a record:
-
-- Title
-- Description
-- Source
-- Source URL
-- Product
-- Version
-- External ID
-
-If required information is missing, BryghtCentral displays an error instead of creating an incomplete record.
-
----
-
-## URL Validation
-
-Source URLs must begin with:
-
-```text
-http://
-```
-
-or:
-
-```text
-https://
-```
-
-Invalid source URLs are rejected.
-
----
-
-## Date Validation
-
-Date values are parsed before being stored.
-
-Invalid date values are rejected instead of being written to the database.
-
-Missing optional dates are stored as null values.
-
----
-
-## Duplicate Handling
-
-Before creating a record, BryghtCentral checks:
+Duplicate protection continues to use:
 
 ```text
 source + external_id
 ```
 
-If that combination already exists, the application displays:
+---
+
+# Lifecycle Synchronization
+
+BryghtCentral can synchronize lifecycle information from endoflife.date.
+
+The synchronization system:
+
+1. Retrieves external lifecycle information.
+2. Converts external values into application fields.
+3. Checks for an existing record using `source + external_id`.
+4. Creates missing records.
+5. Updates existing records.
+6. Commits the transaction.
+
+A repeated synchronization demonstrated duplicate-safe behavior:
 
 ```text
-A record with this source and external ID already exists.
+Created: 0
+Updated: 171
 ```
 
-The database also enforces the same uniqueness rule.
-
-This provides both application-level and database-level duplicate protection.
+This confirms that synchronization updates existing records rather than creating duplicate lifecycle entries.
 
 ---
 
-# External Information Sources
+# Application Architecture
 
-## 1. endoflife.date API
-
-**Purpose:** Retrieve structured product lifecycle information.
-
-Current endpoints:
-
-### macOS
+BryghtCentral separates major responsibilities across routes, models, services, templates, and static files.
 
 ```text
-https://endoflife.date/api/v1/products/macos/
+Browser
+   ↓
+Flask Route
+   ↓
+Search Service
+   ↓
+SQLAlchemy ORM
+   ↓
+MySQL
+   ↓
+Search Results
+   ↓
+Jinja Template
+   ↓
+Browser
 ```
 
-### Google Chrome
+Search telemetry follows a second path:
 
 ```text
-https://endoflife.date/api/v1/products/chrome/
+Completed Search
+      ↓
+SearchEvent Model
+      ↓
+SQLAlchemy
+      ↓
+MySQL
+      ↓
+Search History
 ```
 
-BryghtCentral extracts information such as:
-
-- Product version
-- Codename
-- Release date
-- Maintained status
-- End-of-life status
-- End-of-life date
-- Latest version
-- Latest release date
-
-This is the external dataset persisted in MySQL for A3.
-
----
-
-## 2. Apple Security Releases
-
-**Source:**
-
-```text
-https://support.apple.com/en-us/100100
-```
-
-BryghtCentral retrieves Apple's public Security Releases webpage using Python `requests` and parses the HTML with BeautifulSoup.
-
-The scraper extracts:
-
-- Update name
-- Available-for information
-- Release date
-- Security-information URL
-
-Apple security information remains temporary during A3 and is not currently stored in MySQL.
-
----
-
-# Support Intelligence
-
-The Support Intelligence interface continues the A2 functionality.
-
-Users select:
-
-1. Product
-2. Version
-
-BryghtCentral then evaluates lifecycle information and produces a basic recommendation.
-
-Example:
-
-```text
-macOS 13
-    ↓
-Ventura
-    ↓
-End of Life
-    ↓
-Upgrade Recommended
-```
-
-For macOS, BryghtCentral also displays matching Apple security-release information.
-
----
-
-# BryghtCentral Recommendations
-
-BryghtCentral currently uses basic lifecycle rules.
-
-## Supported
-
-If a release remains actively maintained:
-
-```text
-Supported
-```
-
-Example:
-
-```text
-macOS 15 (Sequoia) is still maintained and receiving support.
-```
-
----
-
-## Upgrade Recommended
-
-If a release has reached end of life or is no longer maintained:
-
-```text
-Upgrade Recommended
-```
-
-Example:
-
-```text
-macOS 13 (Ventura) is no longer receiving active support.
-
-Upgrade to a currently supported release if the device
-or application is compatible.
-```
-
-These rules provide the foundation for more advanced intelligent analysis later in the semester.
-
----
-
-# Current Features
-
-BryghtCentral currently includes:
-
-### Homepage
-
-Provides navigation to the primary application features.
-
-### Asset Directory
-
-Provides locally stored IT asset information from JSON.
-
-### Support Intelligence
-
-Provides:
-
-- External lifecycle API integration
-- Product selection
-- Version selection
-- Lifecycle analysis
-- Support-status detection
-- Upgrade recommendations
-- Apple Security Releases web scraping
-- External source attribution
-- Error handling
-
-### Stored Records
-
-Provides:
-
-- MySQL persistence
-- SQLAlchemy database integration
-- Browser-based lifecycle synchronization
-- Create functionality
-- Read functionality
-- Update functionality
-- Delete functionality
-- Search
-- Product filtering
-- Status filtering
-- Duplicate handling
-- Input validation
-- Persistent lifecycle information
+Separating retrieval logic from Flask routing keeps the application easier to maintain and prepares the project for later intelligent-system features.
 
 ---
 
@@ -775,60 +1079,83 @@ bryan-it401-project/
 │
 ├── app.py
 ├── extensions.py
-├── README.md
 ├── requirements.txt
-├── .gitignore
+├── README.md
+├── .env
 ├── .env.example
+├── .gitignore
 ├── sync_lifecycle.py
 │
 ├── data/
 │   └── assets.json
 │
 ├── migrations/
-│   ├── versions/
-│   └── ...
+│   ├── README
+│   ├── alembic.ini
+│   ├── env.py
+│   ├── script.py.mako
+│   └── versions/
+│       ├── 0772cbdf46e6_create_lifecycle_records_table.py
+│       └── <search-event migration>.py
 │
 ├── models/
 │   ├── __init__.py
-│   └── lifecycle.py
+│   ├── lifecycle.py
+│   └── search_event.py
 │
 ├── routes/
 │   ├── main.py
-│   └── lifecycle_records.py
+│   ├── lifecycle_records.py
+│   └── search.py
 │
 ├── services/
 │   ├── lifecycle_api.py
+│   ├── apple_scraper.py
 │   ├── lifecycle_persistence.py
-│   └── apple_scraper.py
+│   └── search_service.py
 │
-├── static/
-│   ├── style.css
-│   ├── images/
-│   │   └── bryghtcentral-logo.svg
-│   └── screenshots/
-│       ├── a2-homepage.png
-│       ├── a2-api-results.png
-│       ├── a2-scraped-results.png
-│       ├── a2-combined-interface.png
-│       ├── a2-error-handling.png
-│       ├── a3-homepage.png
-│       ├── a3-stored-records.png
-│       ├── a3-crud-interface.png
-│       ├── a3-sync-success.png
-│       └── a3-validation.png
+├── templates/
+│   ├── base.html
+│   ├── index.html
+│   ├── assets.html
+│   ├── support_intelligence.html
+│   ├── stored_releases.html
+│   ├── lifecycle_form.html
+│   ├── search.html
+│   └── search_history.html
 │
-└── templates/
-    ├── base.html
-    ├── index.html
-    ├── assets.html
-    ├── support_intelligence.html
-    ├── stored_releases.html
-    └── lifecycle_form.html
+└── static/
+    ├── style.css
+    │
+    └── screenshots/
+        ├── homepage.png
+        ├── asset-directory.png
+        ├── filtered-assets.png
+        │
+        ├── a2-homepage.png
+        ├── a2-api-results.png
+        ├── a2-scraped-results.png
+        ├── a2-combined-interface.png
+        ├── a2-error-handling.png
+        │
+        ├── a3-homepage.png
+        ├── a3-stored-records.png
+        ├── a3-crud-interface.png
+        ├── a3-sync-success.png
+        ├── a3-validation.png
+        │
+        ├── a4-search-form.png
+        ├── a4-ranked-results.png
+        ├── a4-pagination.png
+        ├── a4-filtered-results.png
+        ├── a4-active-filter.png
+        ├── a4-no-results.png
+        └── a4-search-history.png
 ```
 
 ---
 
-# File Responsibilities
+# Important File Responsibilities
 
 ## `app.py`
 
@@ -837,110 +1164,84 @@ Creates and configures the Flask application.
 Responsibilities include:
 
 - Loading environment variables
-- Configuring the SQLAlchemy database URI
+- Configuring the database connection
 - Initializing SQLAlchemy
 - Initializing Flask-Migrate
 - Registering application routes
-- Registering lifecycle CRUD routes
-
----
 
 ## `extensions.py`
 
-Defines reusable Flask extensions:
-
-```text
-SQLAlchemy
-Flask-Migrate
-```
-
----
+Creates reusable SQLAlchemy and Flask-Migrate extension instances.
 
 ## `models/lifecycle.py`
 
-Defines the `LifecycleRecord` SQLAlchemy model and database schema.
+Defines the persisted lifecycle information model.
 
----
+## `models/search_event.py`
+
+Defines the A4 search telemetry model.
 
 ## `routes/main.py`
 
-Contains the original BryghtCentral application routes, including:
-
-- Homepage
-- Asset Directory
-- Support Intelligence
-
----
+Handles the original BryghtCentral pages and support-intelligence routes.
 
 ## `routes/lifecycle_records.py`
 
-Contains A3 persistence routes for:
+Handles stored lifecycle record browsing and CRUD functionality.
 
-- Stored records
-- Search
-- Filtering
-- Synchronization
-- Create
-- Update
-- Delete
-- Validation
+## `routes/search.py`
 
----
+Handles:
+
+- Search HTTP requests
+- Search form state
+- Search-result rendering
+- Telemetry recording
+- Search-history display
 
 ## `services/lifecycle_api.py`
 
-Retrieves and normalizes lifecycle information from endoflife.date.
-
----
-
-## `services/lifecycle_persistence.py`
-
-Connects the external lifecycle acquisition process with persistent storage.
-
-Responsibilities include:
-
-- Retrieving lifecycle data
-- Transforming information into database records
-- Checking existing records
-- Creating new records
-- Updating existing records
-- Preventing duplicate synchronization
-- Committing or rolling back database transactions
-
----
+Retrieves lifecycle information from endoflife.date.
 
 ## `services/apple_scraper.py`
 
-Retrieves and parses Apple's public Security Releases webpage.
+Retrieves Apple security-release information from Apple's website.
 
----
+## `services/lifecycle_persistence.py`
 
-## `sync_lifecycle.py`
+Synchronizes external lifecycle information into MySQL.
 
-Provides a command-line method for synchronizing lifecycle information.
+## `services/search_service.py`
 
-The application now also provides synchronization through the web interface.
+Contains A4 information-retrieval logic, including:
 
----
+- Query normalization
+- Tokenization
+- Multi-field searching
+- Boolean filtering
+- Relevance scoring
+- Sorting
+- Pagination
+- Search telemetry storage
 
-## `templates/stored_releases.html`
+## `templates/search.html`
 
-Displays persistent MySQL lifecycle information.
+Displays:
 
-It also provides:
+- Search controls
+- Keyword field
+- Filters
+- Sorting controls
+- Search results
+- Relevance scores
+- Pagination
+- Empty-query state
+- No-results state
+- Error messages
 
-- Synchronization button
-- Search
-- Filtering
-- Edit actions
-- Delete actions
-- Database record counts
+## `templates/search_history.html`
 
----
-
-## `templates/lifecycle_form.html`
-
-Provides the Create and Update interface for persistent lifecycle records.
+Displays recorded search telemetry.
 
 ---
 
@@ -949,34 +1250,25 @@ Provides the Create and Update interface for persistent lifecycle records.
 ## 1. Clone the Repository
 
 ```bash
-git clone https://github.com/Bryan-Gutierrez-IT/bryan-it401-project.git
-```
-
-Move into the repository:
-
-```bash
+git clone <repository-url>
 cd bryan-it401-project
 ```
 
----
-
-## 2. Switch to the A3 Branch
+Switch to the A4 branch if necessary:
 
 ```bash
-git switch bryan-it401-a3
+git switch bryan-it401-a4
 ```
 
 ---
 
-## 3. Create a Virtual Environment
+## 2. Create a Virtual Environment
 
 ```bash
 python3 -m venv .venv
 ```
 
----
-
-## 4. Activate the Virtual Environment
+Activate it:
 
 ### macOS / Linux
 
@@ -986,19 +1278,19 @@ source .venv/bin/activate
 
 ### Windows
 
-```bash
+```text
 .venv\Scripts\activate
 ```
 
 ---
 
-## 5. Install Dependencies
+## 3. Install Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Major A3 dependencies include:
+Major dependencies include:
 
 - Flask
 - Flask-SQLAlchemy
@@ -1013,40 +1305,19 @@ Major A3 dependencies include:
 
 # Environment Variables
 
-Database credentials and application secrets are not stored directly in source code.
-
 Create:
 
 ```text
 .env
 ```
 
-in the project root.
-
-Example:
+from:
 
 ```text
-DB_USERNAME=your_database_username
-DB_PASSWORD=your_database_password
-DB_HOST=127.0.0.1
-DB_PORT=3307
-DB_NAME=your_database_name
-SECRET_KEY=your_secret_key
+.env.example
 ```
 
-The actual `.env` file is excluded from Git using:
-
-```text
-.gitignore
-```
-
-Do not commit database passwords or secret keys to GitHub.
-
----
-
-## `.env.example`
-
-The repository may include a safe example:
+Required variables:
 
 ```text
 DB_USERNAME=
@@ -1057,31 +1328,31 @@ DB_NAME=
 SECRET_KEY=
 ```
 
-No real credentials should appear in `.env.example`.
+Actual credentials must never be committed to Git.
+
+The project currently does not require an API key for the endoflife.date or Apple security-release sources.
 
 ---
 
-## Generate a Flask Secret Key
+# Generating a Secret Key
 
-A development secret can be generated using:
+A development secret key can be generated with:
 
 ```bash
 python -c "import secrets; print(secrets.token_hex(32))"
 ```
 
-Copy the result into:
+Store the result only in:
 
 ```text
-SECRET_KEY=
+.env
 ```
-
-inside `.env`.
 
 ---
 
-# Local CI Keys Database Connection
+# CI Keys Database Connection
 
-During local development, the CI Keys MySQL database can be reached through an SSH tunnel.
+When running the application locally, create the SSH tunnel before starting Flask.
 
 Example:
 
@@ -1095,414 +1366,320 @@ ssh -N -T \
 YOUR_CPANEL_USERNAME@csuci.dooo.host.reclaimhosting.com
 ```
 
-Leave this Terminal session running while BryghtCentral is using the remote database.
+Keep that Terminal session open while using the application.
 
-The application then connects to:
-
-```text
-127.0.0.1:3307
-```
-
-The SSH tunnel forwards that traffic to the database server's:
+The Flask application then connects through:
 
 ```text
-127.0.0.1:3306
+DB_HOST=127.0.0.1
+DB_PORT=3307
 ```
 
 ---
 
-# Database Initialization
+# Database Migrations
 
-Database schema changes are managed using Flask-Migrate.
-
-After configuring `.env` and starting the required database connection, apply existing migrations with:
+Apply all existing migrations with:
 
 ```bash
 flask db upgrade
 ```
 
-The current migration creates:
+When a model changes, create a migration using:
 
-```text
-lifecycle_records
+```bash
+flask db migrate -m "Describe migration"
 ```
 
-The database also contains:
+Then apply it:
 
-```text
-alembic_version
+```bash
+flask db upgrade
 ```
 
-which Flask-Migrate uses to track schema versions.
+A4 adds the `search_events` table through a migration.
 
 ---
 
-# Running BryghtCentral
+# Running the Application
 
-Start the application:
+Start BryghtCentral with:
 
 ```bash
 python app.py
 ```
 
-Open:
-
-### Homepage
+Then open:
 
 ```text
 http://127.0.0.1:5000
 ```
 
-### Asset Directory
+Primary routes include:
 
 ```text
-http://127.0.0.1:5000/assets
+/
+ /assets
+ /support-intelligence
+ /stored-releases
+ /stored-releases/create
+ /search
+ /search-history
 ```
-
-### Support Intelligence
-
-```text
-http://127.0.0.1:5000/support-intelligence
-```
-
-### Stored Lifecycle Records
-
-```text
-http://127.0.0.1:5000/stored-releases
-```
-
----
-
-# Error Handling
-
-BryghtCentral attempts to display useful error messages instead of failing silently.
-
-## Invalid Input
-
-Create and Update operations validate required fields.
-
-Incomplete records are rejected.
-
----
-
-## Invalid URLs
-
-Source URLs that do not begin with:
-
-```text
-http://
-```
-
-or:
-
-```text
-https://
-```
-
-are rejected.
-
----
-
-## Missing Values
-
-Optional fields may remain empty and are stored as null values when appropriate.
-
-Required values cannot be omitted.
-
----
-
-## Duplicate Records
-
-Duplicate lifecycle records are prevented using:
-
-```text
-source + external_id
-```
-
-BryghtCentral checks duplicates before insertion.
-
-The database also enforces a unique constraint as an additional protection layer.
-
----
-
-## Database Errors
-
-Database write operations are wrapped in exception handling.
-
-When a database operation fails:
-
-```text
-db.session.rollback()
-```
-
-is used to prevent a partially completed transaction from remaining active.
-
-SQLAlchemy is also configured to test pooled connections before reuse.
-
----
-
-## Missing Database Configuration
-
-If required database environment variables are missing, application startup reports which required variables are unavailable.
-
-Credentials are never hard-coded into application source files.
-
----
-
-## Missing API Key
-
-The current endoflife.date API integration does not require an API key.
-
-Therefore, missing API-key handling is not currently applicable to this external source.
-
-If an authenticated API is introduced later, credentials should be stored in environment variables rather than source code.
-
----
-
-## External API Failures
-
-The lifecycle API service handles:
-
-- HTTP failures
-- Connection errors
-- Timeouts
-- Invalid responses
-- Empty results
-
----
-
-## Web Scraping Failures
-
-The Apple scraper handles:
-
-- HTTP errors
-- Connection failures
-- Timeouts
-- Missing HTML tables
-- Missing fields
-- Missing information links
-
----
-
-# Design Decisions
-
-## Why endoflife.date Information Is Persisted
-
-Lifecycle information was selected for A3 persistence because it directly supports BryghtCentral's goal of helping IT teams evaluate software support and upgrade requirements.
-
-It is also information that can be reused instead of being requested repeatedly.
-
----
-
-## Why Apple Security Information Remains Temporary
-
-Apple Security Releases remain dynamically scraped during A3 to keep the persistence scope manageable.
-
-Persisting lifecycle information satisfies the A3 persistence requirement while allowing the Apple scraper to continue demonstrating A2 web acquisition.
-
-Apple security information may be persisted in a later version.
-
----
-
-## Why SQLAlchemy Is Used
-
-SQLAlchemy allows BryghtCentral to represent relational database information using Python objects.
-
-This separates application logic from raw SQL and makes the data layer easier to maintain and expand.
-
----
-
-## Why External IDs Are Separate From Database IDs
-
-BryghtCentral uses:
-
-```text
-id
-```
-
-as its internal database primary key.
-
-It separately stores:
-
-```text
-external_id
-```
-
-to identify records originating from an external information source.
-
-This prevents the application from depending on an external service for its internal database identity.
-
----
-
-## Why Duplicate Records Are Updated
-
-External information may change over time.
-
-When lifecycle synchronization retrieves an existing release, BryghtCentral updates the existing record instead of creating another copy.
-
-This keeps the database cleaner and ensures the stored record reflects the newest information available from the source.
-
----
-
-## Why Assets Are Still Stored in JSON
-
-The Asset Directory remains from A1 and is intentionally left in JSON during A3.
-
-The current assignment focuses on persisting externally acquired information.
-
-A future version can migrate assets into relational tables and connect them with lifecycle records.
-
----
-
-# Ethical Considerations
-
-BryghtCentral retrieves information from publicly accessible sources.
-
-External sources are identified in both the interface and documentation.
-
-The Apple scraper:
-
-- Does not bypass authentication
-- Does not access private information
-- Does not modify the source website
-- Does not attempt to bypass access controls
-- Retrieves only information needed for the project
-
-Future development should continue respecting:
-
-- API rate limits
-- Website terms
-- Source attribution requirements
-- Privacy requirements
-- External service limitations
 
 ---
 
 # Screenshots
 
-## Homepage
+## A4 Search Interface
 
-The homepage provides access to BryghtCentral's major features.
+![A4 Search Form](static/screenshots/a4-search-form.png)
 
-```text
-static/screenshots/a3-homepage.png
-```
-
-![BryghtCentral A3 Homepage](static/screenshots/a3-homepage.png)
+The dedicated information-retrieval interface provides a keyword field, product filter, lifecycle-status filter, sorting control, and search button.
 
 ---
 
-## Database-Backed Stored Records
+## A4 Ranked Search Results
 
-The Stored Lifecycle Records page retrieves persistent information from MySQL and provides search, filtering, synchronization, and CRUD controls.
+![A4 Ranked Results](static/screenshots/a4-ranked-results.png)
 
-```text
-static/screenshots/a3-stored-records.png
-```
-
-![BryghtCentral Stored Records](static/screenshots/a3-stored-records.png)
+A broad search for Chrome demonstrates keyword retrieval and relevance ordering.
 
 ---
 
-## CRUD Interface
+## A4 Pagination
 
-The lifecycle form allows users to create and edit persistent records through the web interface.
+![A4 Pagination](static/screenshots/a4-pagination.png)
 
-```text
-static/screenshots/a3-crud-interface.png
-```
-
-![BryghtCentral CRUD Interface](static/screenshots/a3-crud-interface.png)
+The Chrome search returns 148 records. Results are limited to 15 per page while the query, filters, and sorting state remain preserved.
 
 ---
 
-## Synchronization and Duplicate Handling
+## A4 Filtered and Sorted Results
 
-The synchronization interface demonstrates that external lifecycle information can be refreshed without creating duplicate database records.
+![A4 Filtered Results](static/screenshots/a4-filtered-results.png)
 
-Example A3 test:
-
-```text
-Created 0 records
-Updated 171 records
-```
+The interface demonstrates combined:
 
 ```text
-static/screenshots/a3-sync-success.png
+Keyword: Chrome
+Product: Google Chrome
+Status: Ended
+Sort: Newest First
 ```
-
-![BryghtCentral Sync Success](static/screenshots/a3-sync-success.png)
 
 ---
 
-## Validation
+## A4 Active Lifecycle Filter
 
-The application rejects duplicate or invalid records and displays a useful error message.
+![A4 Active Filter](static/screenshots/a4-active-filter.png)
+
+Applying the Active lifecycle filter reduces the Chrome result set to the currently maintained release.
+
+---
+
+## A4 No-Results State
+
+![A4 No Results](static/screenshots/a4-no-results.png)
+
+The application provides a helpful message when no matching records are found.
+
+---
+
+## A4 Search Telemetry
+
+![A4 Search History](static/screenshots/a4-search-history.png)
+
+The Search History interface shows recorded queries, filters, sort selections, result counts, no-result status, and timestamps.
+
+---
+
+# Design Decisions
+
+## Why These Fields Are Searchable
+
+The following fields were selected:
 
 ```text
-static/screenshots/a3-validation.png
+title
+description
+product
+version
+codename
 ```
 
-![BryghtCentral Validation](static/screenshots/a3-validation.png)
+because they represent the information users are most likely to know when attempting to identify a software release.
+
+For example, a technician might know:
+
+```text
+Ventura
+```
+
+without knowing:
+
+```text
+macOS 13
+```
+
+Searching the codename makes that information discoverable.
+
+---
+
+## Why Product and Status Are Filters
+
+Product and lifecycle state are structured attributes with a limited set of possible values.
+
+They are therefore more appropriate as Boolean-style filters than as free-text search fields.
+
+---
+
+## Why Relevance Uses a Custom Score
+
+BryghtCentral currently contains a relatively small and highly structured lifecycle dataset.
+
+A rule-based relevance model provides several advantages:
+
+- Easy to explain
+- Easy to debug
+- Predictable behavior
+- No additional search infrastructure
+- Strong matches in important fields can be weighted more heavily
+
+This approach is appropriate for the current scale of the project.
+
+---
+
+## Why Pagination Uses 15 Results
+
+A page size of:
+
+```text
+15
+```
+
+was selected as a balance between:
+
+- Displaying enough information to browse efficiently
+- Keeping pages manageable
+- Avoiding rendering the full result collection
+- Providing meaningful pagination for large searches such as Chrome
+
+---
+
+## Why Search Telemetry Is Stored
+
+Search telemetry prepares BryghtCentral for later intelligent-system functionality.
+
+Future versions could use search activity to identify:
+
+- Common user needs
+- Frequently searched products
+- Poor-performing queries
+- Missing terminology
+- Failed searches
+- Useful ranking improvements
+- Recommendation opportunities
+
+---
+
+# Ethical and Privacy Considerations
+
+Search telemetry can potentially reveal user interests or behavior.
+
+BryghtCentral currently avoids collecting sensitive personal information.
+
+The telemetry model stores retrieval activity rather than identity information.
+
+If authentication or personalized search is added later, additional privacy controls would be necessary.
+
+Potential improvements could include:
+
+- Retention limits
+- User consent
+- Anonymization
+- Administrative access controls
+- Telemetry deletion policies
 
 ---
 
 # Known Limitations
 
-The A3 implementation is intentionally limited in scope.
+The current retrieval system intentionally remains understandable and relatively simple.
 
-Current limitations include:
+Known limitations include:
 
-- Only macOS and Google Chrome lifecycle information is synchronized.
-- Apple Security Releases are not yet persisted.
-- Asset records remain stored in JSON.
-- Asset records are not yet connected to lifecycle records.
-- User accounts and authentication are not implemented.
-- Lifecycle history is updated in place rather than stored as historical snapshots.
-- Recommendations currently use basic lifecycle rules.
-- Hardware compatibility is not evaluated.
-- External data quality depends on the original sources.
-- Changes to Apple's webpage structure may require scraper updates.
-- Local database access currently depends on an active SSH tunnel.
-- Advanced retrieval and ranking are reserved for later assignments.
+- Search is primarily keyword-based.
+- Synonyms are not understood automatically.
+- Singular and plural forms may produce different results.
+- Stemming and lemmatization are not implemented.
+- Typographical errors are not automatically corrected.
+- Ranking is rule-based.
+- MySQL full-text indexing is not currently used.
+- Search is not personalized.
+- Search results do not currently learn from previous user selections.
+- Result clicks and selected-result rank are not yet recorded.
+- Search suggestions are not implemented.
+- Autocomplete is not implemented.
+- Semantic similarity is not implemented.
+- The current stored lifecycle collection is limited mainly to macOS and Google Chrome.
+- Search relevance is optimized for the current structured lifecycle dataset rather than general unstructured documents.
 
 ---
 
-# Future Work - A4
+# Future Work
 
-A4 will focus on **Search and Information Retrieval**.
+Future modules can build intelligent behavior on top of the A4 retrieval foundation.
 
-The persistent database created in A3 provides the foundation for more advanced retrieval features.
+Potential improvements include:
 
-Potential A4 improvements include:
+## Semantic Search
 
-- Improved database search
-- More flexible filtering
-- Sorting and ranking
-- Search across multiple information types
-- Retrieval by product
-- Retrieval by lifecycle status
-- Retrieval by support state
-- Query result ranking
-- Better database-backed navigation
-- Search result explanations
+Use embeddings or another semantic representation so conceptually related queries can match even when they do not use the same words.
 
-The persistent lifecycle dataset can later support more advanced intelligent analysis and decision support.
+## Search Suggestions
 
-Longer-term BryghtCentral development may also include:
+Recommend alternate queries when a search produces few or no results.
 
-- Persisted asset records
-- Employee records
-- Department information
-- Location information
-- Software assignments
-- Asset-to-software relationships
-- Role-based technology recommendations
-- Hardware lifecycle information
-- Recall information
-- Upgrade prioritization
-- Historical lifecycle snapshots
-- More advanced recommendation logic
+## Autocomplete
+
+Use existing stored products, versions, and search-history terms to suggest queries while the user types.
+
+## Typo Tolerance
+
+Handle small misspellings and spelling variations.
+
+## Full-Text Indexing
+
+Use MySQL full-text indexes if the database grows large enough that wildcard matching becomes inefficient.
+
+## Personalized Ranking
+
+Use user role, device environment, or previous interactions to prioritize relevant records.
+
+## Search Interaction Telemetry
+
+Record:
+
+- Result selected
+- Selected result rank
+- Time to selection
+- Query reformulation
+- Abandoned searches
+
+## Recommendations
+
+Use stored information, search context, lifecycle status, and telemetry to recommend:
+
+- Software upgrades
+- Devices requiring attention
+- Unsupported products
+- Replacement priorities
+- Appropriate software versions
+
+## Retrieval-Augmented Intelligence
+
+Retrieved lifecycle information could eventually provide grounded context to an intelligent component that generates explanations or IT recommendations.
 
 ---
 
@@ -1513,16 +1690,43 @@ Longer-term BryghtCentral development may also include:
 - Flask-SQLAlchemy
 - SQLAlchemy
 - Flask-Migrate
+- Alembic
 - PyMySQL
-- MySQL / MariaDB-compatible database
+- MySQL / MariaDB
 - python-dotenv
+- Requests
+- BeautifulSoup
 - HTML
 - CSS
 - Jinja
-- JSON
-- Requests
-- BeautifulSoup
-- REST APIs
-- Web scraping
 - Git
 - GitHub
+- CI Keys
+- SSH tunneling
+
+---
+
+# Assignment Progress
+
+```text
+A1 — Application Foundation                 Complete
+A2 — Information Acquisition                Complete
+A3 — Information Persistence                Complete
+A4 — Search and Information Retrieval       Complete
+```
+
+BryghtCentral now supports the full information flow developed through the first four application assignments:
+
+```text
+Acquire
+   ↓
+Persist
+   ↓
+Retrieve
+   ↓
+Rank
+   ↓
+Present
+```
+
+This retrieval foundation prepares the application for later IT401 modules involving intelligent behavior, recommendations, and decision support.

@@ -1,20 +1,33 @@
 <!doctype html>
 <html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>{% block title %}BryghtCentral{% endblock %}</title>
+<head>
+
+    <meta charset="utf-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1"
+    >
+
+    <title>
+        {% block title %}
+        BryghtCentral
+        {% endblock %}
+    </title>
 
     <link
         rel="stylesheet"
         href="{{ url_for('static', filename='style.css') }}"
     >
+
 </head>
+
 
 <body>
 
     <header>
+
         <nav class="navbar">
 
             <a
@@ -42,22 +55,34 @@
                     Stored Records
                 </a>
 
+                <a href="{{ url_for('search') }}">
+                    Search
+                </a>
+
             </div>
 
         </nav>
+
     </header>
 
+
     <main>
+
         {% block content %}
         {% endblock %}
+
     </main>
 
+
     <footer>
+
         <p>
             BryghtCentral • IT401 Web Intelligence •
             Bryan Gutierrez • 2026
         </p>
+
     </footer>
 
 </body>
+
 </html>

@@ -1,0 +1,579 @@
+{% extends "base.html" %}
+
+{% block title %}
+Search | BryghtCentral
+{% endblock %}
+
+
+{% block content %}
+
+<section class="search-page">
+
+    <div class="search-page-header">
+
+        <div>
+
+            <p class="eyebrow">
+                INFORMATION RETRIEVAL
+            </p>
+
+            <h1>
+                Lifecycle Search
+            </h1>
+
+            <p>
+                Search and retrieve lifecycle information
+                stored in the BryghtCentral MySQL database.
+            </p>
+
+        </div>
+
+        <a
+            href="{{ url_for('search_history') }}"
+            class="secondary-button"
+        >
+            Search History
+        </a>
+
+    </div>
+
+
+    <form
+        method="GET"
+        action="{{ url_for('search') }}"
+        class="search-interface"
+    >
+
+        <div class="search-query-field">
+
+            <label for="q">
+                Keyword or phrase
+            </label>
+
+            <input
+                id="q"
+                type="search"
+                name="q"
+                maxlength="200"
+                placeholder="Try Ventura, Chrome 153, Sequoia..."
+                value="{{ search_result.original_query }}"
+            >
+
+        </div>
+
+
+        <div class="search-filter-field">
+
+            <label for="product">
+                Product
+            </label>
+
+            <select
+                id="product"
+                name="product"
+            >
+
+                <option value="">
+                    All Products
+                </option>
+
+                {% for product in search_result.products %}
+
+                    <option
+                        value="{{ product }}"
+                        {% if search_result.product_filter == product %}
+                            selected
+                        {% endif %}
+                    >
+                        {{ product }}
+                    </option>
+
+                {% endfor %}
+
+            </select>
+
+        </div>
+
+
+        <div class="search-filter-field">
+
+            <label for="status">
+                Status
+            </label>
+
+            <select
+                id="status"
+                name="status"
+            >
+
+                <option value="">
+                    All Statuses
+                </option>
+
+                <option
+                    value="active"
+                    {% if search_result.status_filter == "active" %}
+                        selected
+                    {% endif %}
+                >
+                    Active
+                </option>
+
+                <option
+                    value="ended"
+                    {% if search_result.status_filter == "ended" %}
+                        selected
+                    {% endif %}
+                >
+                    Ended
+                </option>
+
+                <option
+                    value="unknown"
+                    {% if search_result.status_filter == "unknown" %}
+                        selected
+                    {% endif %}
+                >
+                    Unknown
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <div class="search-filter-field">
+
+            <label for="sort">
+                Sort
+            </label>
+
+            <select
+                id="sort"
+                name="sort"
+            >
+
+                <option
+                    value="relevance"
+                    {% if search_result.sort_option == "relevance" %}
+                        selected
+                    {% endif %}
+                >
+                    Relevance
+                </option>
+
+                <option
+                    value="newest"
+                    {% if search_result.sort_option == "newest" %}
+                        selected
+                    {% endif %}
+                >
+                    Newest First
+                </option>
+
+                <option
+                    value="oldest"
+                    {% if search_result.sort_option == "oldest" %}
+                        selected
+                    {% endif %}
+                >
+                    Oldest First
+                </option>
+
+                <option
+                    value="alphabetical"
+                    {% if search_result.sort_option == "alphabetical" %}
+                        selected
+                    {% endif %}
+                >
+                    Alphabetical
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <div class="search-form-actions">
+
+            <button
+                type="submit"
+                class="primary-button"
+            >
+                Search
+            </button>
+
+            <a
+                href="{{ url_for('search') }}"
+                class="secondary-button"
+            >
+                Clear
+            </a>
+
+        </div>
+
+    </form>
+
+
+    {% if search_result.notice %}
+
+        <div class="search-notice">
+
+            {{ search_result.notice }}
+
+        </div>
+
+    {% endif %}
+
+
+    {% if telemetry_warning %}
+
+        <div class="search-notice">
+
+            {{ telemetry_warning }}
+
+        </div>
+
+    {% endif %}
+
+
+    {% if not search_result.searched %}
+
+        <div class="search-empty-state">
+
+            <h2>
+                Search Stored Information
+            </h2>
+
+            <p>
+                Enter a keyword or phrase to begin.
+            </p>
+
+            <p class="search-example">
+                Examples: Ventura, Chrome 153,
+                Sequoia, macOS
+            </p>
+
+        </div>
+
+
+    {% elif not search_result.success %}
+
+        <div class="search-error">
+
+            <h2>
+                Search Error
+            </h2>
+
+            <p>
+                {{ search_result.error }}
+            </p>
+
+        </div>
+
+
+    {% elif search_result.total == 0 %}
+
+        <div class="search-empty-state">
+
+            <h2>
+                No Results Found
+            </h2>
+
+            <p>
+                No matching records were found for
+                "<strong>{{ search_result.original_query }}</strong>".
+            </p>
+
+            <p>
+                Try a broader term or remove one
+                of the filters.
+            </p>
+
+        </div>
+
+
+    {% else %}
+
+        <div class="search-results-header">
+
+            <div>
+
+                <h2>
+                    Results for
+                    "{{ search_result.original_query }}"
+                </h2>
+
+                <p>
+                    Showing
+                    {{ search_result.first_result }}
+                    –
+                    {{ search_result.last_result }}
+                    of
+                    {{ search_result.total }}
+                    results.
+                </p>
+
+            </div>
+
+            <div class="search-query-details">
+
+                <span>
+                    Sort:
+                    <strong>
+                        {{ search_result.sort_option|title }}
+                    </strong>
+                </span>
+
+                {% if search_result.product_filter %}
+
+                    <span>
+                        Product:
+                        <strong>
+                            {{ search_result.product_filter }}
+                        </strong>
+                    </span>
+
+                {% endif %}
+
+                {% if search_result.status_filter %}
+
+                    <span>
+                        Status:
+                        <strong>
+                            {{ search_result.status_filter|title }}
+                        </strong>
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <div class="search-results-list">
+
+            {% for item in search_result.results %}
+
+                {% set record = item.record %}
+
+                <article class="search-result-card">
+
+                    <div class="search-result-top">
+
+                        <div>
+
+                            <p class="result-product">
+                                {{ record.product }}
+                            </p>
+
+                            <h3>
+
+                                {{ record.version }}
+
+                                {% if record.codename %}
+
+                                    —
+                                    {{ record.codename }}
+
+                                {% endif %}
+
+                            </h3>
+
+                        </div>
+
+
+                        <div class="result-status">
+
+                            {% if record.is_eol %}
+
+                                <span
+                                    class="status-badge status-ended"
+                                >
+                                    Ended
+                                </span>
+
+                            {% elif record.is_maintained %}
+
+                                <span
+                                    class="status-badge status-active"
+                                >
+                                    Active
+                                </span>
+
+                            {% else %}
+
+                                <span
+                                    class="status-badge"
+                                >
+                                    Unknown
+                                </span>
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+
+                    <p class="result-title">
+
+                        {{ record.title }}
+
+                    </p>
+
+
+                    <p class="result-description">
+
+                        {{ record.description }}
+
+                    </p>
+
+
+                    <div class="result-metadata">
+
+                        <span>
+                            <strong>Source:</strong>
+                            {{ record.source }}
+                        </span>
+
+                        <span>
+
+                            <strong>Released:</strong>
+
+                            {% if record.release_date %}
+
+                                {{ record.release_date }}
+
+                            {% else %}
+
+                                Unknown
+
+                            {% endif %}
+
+                        </span>
+
+                        <span>
+                            <strong>Relevance:</strong>
+                            {{ item.score }}
+                        </span>
+
+                    </div>
+
+
+                    {% if record.source_url %}
+
+                        <a
+                            href="{{ record.source_url }}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="result-source-link"
+                        >
+                            View Source
+                        </a>
+
+                    {% endif %}
+
+                </article>
+
+            {% endfor %}
+
+        </div>
+
+
+        {% if search_result.pages > 1 %}
+
+            <nav
+                class="search-pagination"
+                aria-label="Search result pages"
+            >
+
+                <div>
+
+                    {% if search_result.has_prev %}
+
+                        <a
+                            class="secondary-button"
+                            href="{{
+                                url_for(
+                                    'search',
+                                    q=search_result.original_query,
+                                    product=search_result.product_filter,
+                                    status=search_result.status_filter,
+                                    sort=search_result.sort_option,
+                                    page=search_result.prev_num
+                                )
+                            }}"
+                        >
+                            Previous
+                        </a>
+
+                    {% else %}
+
+                        <span
+                            class="secondary-button disabled-button"
+                        >
+                            Previous
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+
+                <div class="page-indicator">
+
+                    Page
+                    <strong>
+                        {{ search_result.page }}
+                    </strong>
+                    of
+                    <strong>
+                        {{ search_result.pages }}
+                    </strong>
+
+                </div>
+
+
+                <div>
+
+                    {% if search_result.has_next %}
+
+                        <a
+                            class="secondary-button"
+                            href="{{
+                                url_for(
+                                    'search',
+                                    q=search_result.original_query,
+                                    product=search_result.product_filter,
+                                    status=search_result.status_filter,
+                                    sort=search_result.sort_option,
+                                    page=search_result.next_num
+                                )
+                            }}"
+                        >
+                            Next
+                        </a>
+
+                    {% else %}
+
+                        <span
+                            class="secondary-button disabled-button"
+                        >
+                            Next
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+            </nav>
+
+        {% endif %}
+
+    {% endif %}
+
+</section>
+
+{% endblock %}
