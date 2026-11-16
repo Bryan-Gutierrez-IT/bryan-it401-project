@@ -5,10 +5,13 @@ from dotenv import load_dotenv
 from flask import Flask
 
 from extensions import db, migrate
-from routes.main import register_routes
+from routes.intelligence import (
+    register_intelligence_routes
+)
 from routes.lifecycle_records import (
     register_lifecycle_routes
 )
+from routes.main import register_routes
 from routes.search import (
     register_search_routes
 )
@@ -19,9 +22,13 @@ load_dotenv()
 
 def create_app():
 
-    app = Flask(__name__)
+    app = Flask(
+        __name__
+    )
 
-    app.config["SECRET_KEY"] = os.getenv(
+    app.config[
+        "SECRET_KEY"
+    ] = os.getenv(
         "SECRET_KEY",
         "dev-secret-key"
     )
@@ -95,14 +102,18 @@ def create_app():
         "pool_recycle": 280
     }
 
-    db.init_app(app)
+    db.init_app(
+        app
+    )
 
     migrate.init_app(
         app,
         db
     )
 
-    register_routes(app)
+    register_routes(
+        app
+    )
 
     register_lifecycle_routes(
         app
@@ -112,9 +123,14 @@ def create_app():
         app
     )
 
+    register_intelligence_routes(
+        app
+    )
+
     # Import models so SQLAlchemy and
-    # Flask-Migrate can discover them.
+    # Flask-Migrate know about them.
     from models import (
+        IntelligenceResult,
         LifecycleRecord,
         SearchEvent
     )

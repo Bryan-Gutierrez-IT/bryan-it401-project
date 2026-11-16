@@ -1,0 +1,332 @@
+{% extends "base.html" %}
+
+{% block title %}
+Intelligence History | BryghtCentral
+{% endblock %}
+
+
+{% block content %}
+
+<section class="intelligence-page">
+
+    <div class="intelligence-page-header">
+
+        <div>
+
+            <p class="eyebrow">
+                STORED INTELLIGENCE
+            </p>
+
+            <h1>
+                Intelligence History
+            </h1>
+
+            <p>
+                Review validated lifecycle recommendations
+                previously generated and stored by
+                BryghtCentral.
+            </p>
+
+        </div>
+
+        <a
+            href="{{ url_for('intelligence') }}"
+            class="primary-button"
+        >
+            Generate Intelligence
+        </a>
+
+    </div>
+
+
+    {% if not history_items %}
+
+        <div class="intelligence-empty-state">
+
+            <h2>
+                No Stored Intelligence
+            </h2>
+
+            <p>
+                Generate a lifecycle recommendation
+                to create the first stored result.
+            </p>
+
+            <a
+                href="{{ url_for('intelligence') }}"
+                class="primary-button"
+            >
+                Generate Recommendation
+            </a>
+
+        </div>
+
+    {% else %}
+
+        <div class="history-summary">
+
+            <strong>
+                {{ history_items|length }}
+            </strong>
+
+            stored intelligence
+            result{% if history_items|length != 1 %}s{% endif %}
+
+        </div>
+
+
+        <div class="intelligence-history-list">
+
+            {% for item in history_items %}
+
+                {% set result = item["record"] %}
+
+                <article class="intelligence-history-card">
+
+                    <div class="history-card-header">
+
+                        <div>
+
+                            <p class="record-id-label">
+                                INTELLIGENCE RESULT #{{ result.id }}
+                            </p>
+
+                            <h2>
+                                {{ result.user_request }}
+                            </h2>
+
+                        </div>
+
+
+                        <div class="history-badges">
+
+                            <span class="
+                                recommendation-value
+                                recommendation-{{ result.recommendation|lower }}
+                                history-recommendation
+                            ">
+                                {{ result.recommendation }}
+                            </span>
+
+                            <span class="
+                                confidence-badge
+                                confidence-{{ result.confidence }}
+                            ">
+                                {{ result.confidence|upper }}
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="history-summary-text">
+
+                        <h3>
+                            Summary
+                        </h3>
+
+                        <p>
+                            {{ result.summary }}
+                        </p>
+
+                    </div>
+
+
+                    <div class="intelligence-output-grid">
+
+                        <div class="intelligence-output-card">
+
+                            <h3>
+                                Rationale
+                            </h3>
+
+                            <ul>
+
+                                {% for reason in item["rationale"] %}
+
+                                    <li>
+                                        {{ reason }}
+                                    </li>
+
+                                {% endfor %}
+
+                            </ul>
+
+                        </div>
+
+
+                        <div class="intelligence-output-card">
+
+                            <h3>
+                                Limitations
+                            </h3>
+
+                            <ul>
+
+                                {% for limitation in item["limitations"] %}
+
+                                    <li>
+                                        {{ limitation }}
+                                    </li>
+
+                                {% endfor %}
+
+                            </ul>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="history-supporting-section">
+
+                        <h3>
+                            Supporting Records
+                        </h3>
+
+
+                        {% if item["supporting_items"] %}
+
+                            <div class="supporting-evidence-list">
+
+                                {% for support in item["supporting_items"] %}
+
+                                    <div class="supporting-evidence-card">
+
+                                        <div class="supporting-evidence-heading">
+
+                                            <strong>
+                                                Record #{{ support["record_id"] }}
+                                            </strong>
+
+                                            <span>
+                                                {{ support["product"] }}
+                                                {{ support["version"] }}
+                                            </span>
+
+                                        </div>
+
+                                        <p>
+                                            {{ support["evidence"] }}
+                                        </p>
+
+                                        <small>
+                                            Source:
+                                            {{ support["source"] }}
+                                        </small>
+
+                                    </div>
+
+                                {% endfor %}
+
+                            </div>
+
+                        {% else %}
+
+                            <p>
+                                No supporting records were stored.
+                            </p>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <details class="intelligence-metadata">
+
+                        <summary>
+                            Stored Generation Details
+                        </summary>
+
+                        <dl>
+
+                            <div>
+
+                                <dt>
+                                    Capability
+                                </dt>
+
+                                <dd>
+                                    {{ result.capability }}
+                                </dd>
+
+                            </div>
+
+
+                            <div>
+
+                                <dt>
+                                    Model
+                                </dt>
+
+                                <dd>
+                                    {{ result.model_name }}
+                                </dd>
+
+                            </div>
+
+
+                            <div>
+
+                                <dt>
+                                    Prompt Version
+                                </dt>
+
+                                <dd>
+                                    {{ result.prompt_version }}
+                                </dd>
+
+                            </div>
+
+
+                            <div>
+
+                                <dt>
+                                    Source Record IDs
+                                </dt>
+
+                                <dd>
+
+                                    {% if item["source_record_ids"] %}
+
+                                        {{ item["source_record_ids"]|join(", ") }}
+
+                                    {% else %}
+
+                                        None
+
+                                    {% endif %}
+
+                                </dd>
+
+                            </div>
+
+
+                            <div>
+
+                                <dt>
+                                    Generated
+                                </dt>
+
+                                <dd>
+                                    {{ result.generated_at }}
+                                </dd>
+
+                            </div>
+
+                        </dl>
+
+                    </details>
+
+                </article>
+
+            {% endfor %}
+
+        </div>
+
+    {% endif %}
+
+</section>
+
+{% endblock %}

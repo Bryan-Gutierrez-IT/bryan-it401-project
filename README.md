@@ -2,7 +2,7 @@
 
 **Student:** Bryan Gutierrez  
 **Course:** IT401 — Web Intelligence  
-**Assignment:** A4 — Expanding the Web Intelligence Application with Search
+**Assignment:** A5 — Expanding the Web Intelligence Application with Intelligence Generation
 
 ---
 
@@ -15,11 +15,12 @@ The application has grown across the IT401 assignments:
 - **A1:** Established the BryghtCentral application and Asset Directory.
 - **A2:** Added external information acquisition using an API and web scraping.
 - **A3:** Added MySQL persistence, SQLAlchemy models, database migrations, and CRUD functionality.
-- **A4:** Adds information retrieval through keyword search, Boolean filtering, relevance ranking, sorting, pagination, search telemetry, and retrieval evaluation.
+- **A4:** Added information retrieval through keyword search, Boolean filtering, relevance ranking, sorting, pagination, search telemetry, and retrieval evaluation.
+- **A5:** Adds retrieval-augmented lifecycle recommendations using Gemini, structured output, validation, generated-result persistence, and intelligence history.
 
 BryghtCentral is intended for IT support technicians, administrators, and other technical staff who need to quickly determine software lifecycle status and locate useful support information.
 
-The A4 search system improves the application by allowing users to retrieve relevant lifecycle records instead of manually browsing all stored database entries.
+The A5 intelligence system builds on A4 retrieval by using retrieved lifecycle records as bounded context for a validated lifecycle recommendation. BryghtCentral now moves beyond finding information and generates new, grounded intelligence from retrieved evidence.
 
 ---
 
@@ -53,6 +54,16 @@ BryghtCentral currently includes:
 - Search-history interface
 - Helpful no-results states
 - Database and search error handling
+- Retrieval-augmented intelligence generation
+- Gemini Developer API integration through REST
+- Lifecycle recommendations: KEEP, UPGRADE, REPLACE, or INVESTIGATE
+- Structured JSON output
+- Pydantic validation
+- Supporting-record ID validation
+- Bounded model context
+- Generated-intelligence persistence
+- Intelligence History interface
+- Empty-context and AI-service error handling
 
 ---
 
@@ -161,7 +172,7 @@ Database credentials are stored in a local `.env` file and are not committed to 
 
 # Database Schema
 
-A4 uses two primary SQLAlchemy models.
+A5 uses three primary SQLAlchemy models.
 
 ---
 
@@ -224,6 +235,34 @@ Stores basic telemetry for completed searches.
 | `result_count` | Number of records matching the search |
 | `no_results` | Indicates whether the search returned zero results |
 | `searched_at` | Date and time the search occurred |
+
+## IntelligenceResult
+
+**Table:** `intelligence_results`
+
+**Purpose:**
+Stores successfully validated lifecycle intelligence generated from retrieved BryghtCentral records.
+
+| Attribute | Purpose |
+|---|---|
+| `id` | Primary key |
+| `user_request` | User question or request |
+| `capability` | Intelligent capability; currently `recommendation` |
+| `summary` | Generated lifecycle summary |
+| `recommendation` | KEEP, UPGRADE, REPLACE, or INVESTIGATE |
+| `confidence` | high, medium, or low |
+| `rationale_json` | JSON list of evidence-based reasons |
+| `supporting_items_json` | JSON list of supporting records and evidence |
+| `limitations_json` | JSON list of limitations |
+| `source_record_ids_json` | JSON list of lifecycle record IDs used as context |
+| `prompt_version` | Version identifier for the prompt |
+| `model_name` | Gemini model used for generation |
+| `generated_at` | Generation timestamp |
+| `created_at` | Database creation timestamp |
+
+Only successful, validated generations are stored. Failed or empty-context requests are not persisted.
+
+---
 
 The current schema can be summarized as:
 
@@ -916,9 +955,414 @@ One future improvement would be adding synonym-aware or semantic retrieval. The 
 
 ---
 
+# Intelligence Generation
+
+A5 adds one intelligent capability to BryghtCentral:
+
+```text
+Lifecycle Recommendation
+```
+
+The recommendation capability was selected because lifecycle data naturally supports operational questions such as whether a release should be kept, upgraded, replaced, or investigated.
+
+Supported recommendation values are:
+
+```text
+KEEP
+UPGRADE
+REPLACE
+INVESTIGATE
+```
+
+Supported confidence labels are:
+
+```text
+high
+medium
+low
+```
+
+The purpose is to help an IT support professional interpret retrieved lifecycle evidence while still showing the underlying records, rationale, limitations, and provenance.
+
+---
+
+# Retrieval-Augmented Workflow
+
+A5 continues using the existing A4 application and retrieval layer. It does not create a separate AI demo.
+
+```text
+User Request
+    ↓
+Retrieve Relevant Records
+    ↓
+Build Bounded Context
+    ↓
+Generate Structured Intelligence
+    ↓
+Validate Output
+    ↓
+Persist Valid Result
+    ↓
+Display Recommendation
+```
+
+The interface summarizes the same process as:
+
+```text
+Retrieve → Analyze → Validate → Recommend
+```
+
+The `/intelligence` route reuses `search_lifecycle_records()` from `services/search_service.py`.
+
+A maximum of five retrieved lifecycle records are supplied to the intelligence component. If no records are retrieved, generation is blocked.
+
+Example empty-context behavior:
+
+```text
+Search: potato123xyz
+
+No lifecycle records matched that search.
+Intelligence was not generated because there was no retrieved context.
+```
+
+This prevents BryghtCentral from asking the model to invent an answer without application evidence.
+
+---
+
+# Context Design
+
+The context builder sends only lifecycle fields that are useful for the recommendation task.
+
+Included information may contain:
+
+- Record ID
+- Title
+- Product
+- Version
+- Codename
+- Description
+- Release date
+- Maintenance status
+- End-of-life status
+- End-of-life date
+- Latest known version
+- Latest release date
+- Source
+- Source URL
+- Retrieval date
+
+The context excludes:
+
+- Database credentials
+- Gemini API key
+- `.env` contents
+- SSH configuration
+- Unrelated records
+- Unrelated search history
+- Arbitrary external information not retrieved by BryghtCentral
+
+Keeping the context bounded improves grounding, reduces irrelevant information, and makes the final recommendation easier to verify.
+
+---
+
+# Prompt Design
+
+Prompt construction is isolated in:
+
+```text
+services/prompts.py
+```
+
+The current prompt version is:
+
+```text
+a5-lifecycle-recommendation-v1
+```
+
+## System Prompt
+
+The system instructions define Gemini as BryghtCentral's lifecycle intelligence component and require it to:
+
+- Analyze only the supplied lifecycle context
+- Avoid outside knowledge
+- Avoid inventing versions, dates, lifecycle status, or product details
+- Return a supported recommendation value
+- Return a supported confidence label
+- Ground factual claims in retrieved records
+- State limitations when evidence is incomplete
+- Return structured output
+
+## User Prompt
+
+The user prompt is organized into separate sections:
+
+```text
+USER REQUEST
+<user question>
+
+RETRIEVED LIFECYCLE CONTEXT
+<retrieved records>
+
+TASK
+Generate a lifecycle recommendation from the supplied evidence.
+```
+
+Separating instructions, user intent, and retrieved context makes the prompt easier to maintain and reduces ambiguity.
+
+---
+
+# AI Component
+
+BryghtCentral uses the Gemini Developer API for A5.
+
+Configured model:
+
+```text
+gemini-3.6-flash
+```
+
+The application calls Google's REST `generateContent` endpoint with Python `requests`.
+
+Environment variables:
+
+```text
+GEMINI_API_KEY=
+GEMINI_MODEL=gemini-3.6-flash
+```
+
+The actual API key is stored only in `.env` and is never committed to Git.
+
+The generation request includes:
+
+- System instructions
+- User request
+- Retrieved lifecycle context
+- Temperature set to 0
+- JSON response MIME type
+- A JSON response schema
+
+---
+
+# Structured Output
+
+Gemini is asked to return a structured result similar to:
+
+```json
+{
+  "summary": "...",
+  "recommendation": "UPGRADE",
+  "confidence": "high",
+  "rationale": ["..."],
+  "supporting_items": [
+    {
+      "record_id": 25,
+      "product": "Google Chrome",
+      "version": "154",
+      "source": "endoflife.date",
+      "evidence": "..."
+    }
+  ],
+  "limitations": ["..."]
+}
+```
+
+Structured output allows the application to validate and display each field independently.
+
+---
+
+# Validation
+
+Generated intelligence is validated before it is displayed or persisted.
+
+## Pydantic Validation
+
+`SupportingItem` and `IntelligenceOutput` models validate field presence and data types.
+
+## Application Validation
+
+`validate_intelligence_output()` also verifies:
+
+- Summary is present
+- Recommendation is KEEP, UPGRADE, REPLACE, or INVESTIGATE
+- Confidence is high, medium, or low
+- Rationale contains usable strings
+- Supporting items are present
+- Every supporting `record_id` was actually supplied in the retrieved context
+- Required supporting-item fields are present
+- Limitations use the expected list format
+
+A direct validation test used an allowed record ID of `10` while the generated supporting item referenced `999`. The validator correctly rejected the output.
+
+This additional record-ID check helps prevent unsupported or hallucinated citations.
+
+---
+
+# Generated Intelligence Example
+
+A tested web request used:
+
+```text
+Lifecycle search:
+Chrome 154
+
+Intelligence request:
+Should an organization still using this release upgrade?
+```
+
+The existing A4 search service retrieved:
+
+```text
+Record #25
+Google Chrome 154
+Maintained: False
+End of Life: True
+EOL Date: 2026-10-06
+```
+
+The generated result was:
+
+```text
+Recommendation: UPGRADE
+Confidence: high
+```
+
+Summary:
+
+```text
+Google Chrome version 154 has reached End of Life and is no longer maintained, requiring an upgrade.
+```
+
+The rationale referenced the retrieved lifecycle status and EOL date. The model also stated a limitation because the retrieved record did not identify the latest version or latest release date.
+
+The generated result adds value beyond simple retrieval by converting several lifecycle fields into a concise operational interpretation while preserving evidence and uncertainty.
+
+---
+
+# Storage of Generated Intelligence
+
+Successful validated intelligence is persisted through:
+
+```text
+services/intelligence_persistence.py
+```
+
+into:
+
+```text
+intelligence_results
+```
+
+Stored information includes:
+
+- User request
+- Capability
+- Summary
+- Recommendation
+- Confidence
+- Rationale
+- Supporting items
+- Limitations
+- Source record IDs
+- Prompt version
+- Model name
+- Generation timestamp
+
+Two successful tests produced:
+
+```text
+Result #1
+Source IDs: [24, 25]
+
+Result #2
+Source IDs: [25]
+```
+
+The empty-context `potato123xyz` test did not create another database record.
+
+Therefore:
+
+```text
+Valid retrieved context
+    ↓
+Generate
+    ↓
+Validate
+    ↓
+Store
+
+No retrieved context
+    ↓
+Block generation
+    ↓
+Store nothing
+```
+
+---
+
+# A5 Reliability and Fallback Behavior
+
+The intelligence layer gracefully handles:
+
+- Missing Gemini API key
+- Rate limiting
+- Timeouts
+- Connection failures
+- Temporary provider errors
+- Authentication or permission errors
+- Empty retrieval context
+- Invalid JSON
+- Invalid structured output
+- Unsupported recommendation or confidence values
+- Supporting record IDs outside the retrieved context
+- Failed database persistence
+
+Temporary provider failures may be retried a limited number of times.
+
+If generation fails, the user receives a clear error rather than a raw traceback. Failed or ungrounded generations are not stored.
+
+---
+
+# A5 Application Organization
+
+A5 separates responsibilities instead of placing all AI logic inside one route.
+
+```text
+routes/intelligence.py
+    Request handling and rendering
+
+services/search_service.py
+    Existing A4 retrieval
+
+services/context_builder.py
+    Bounded retrieved context
+
+services/prompts.py
+    Versioned system and user prompts
+
+services/intelligence_service.py
+    Gemini REST request and provider-error handling
+
+services/intelligence_validator.py
+    Pydantic and application-level validation
+
+services/intelligence_persistence.py
+    Storage of validated output
+
+models/intelligence_result.py
+    Generated-intelligence database model
+
+templates/intelligence.html
+    Generation interface and structured result display
+
+templates/intelligence_history.html
+    Stored generated-result history
+```
+
+---
+
 # Reliability and Error Handling
 
-BryghtCentral handles common search failures gracefully.
+BryghtCentral handles common search and intelligence-generation failures gracefully.
 
 ## Empty Query
 
@@ -1069,6 +1513,36 @@ Search History
 ```
 
 Separating retrieval logic from Flask routing keeps the application easier to maintain and prepares the project for later intelligent-system features.
+
+---
+
+## A5 Intelligence Architecture
+
+```text
+Browser
+   ↓
+/intelligence Flask Route
+   ↓
+A4 Search Service
+   ↓
+LifecycleRecord Results
+   ↓
+Context Builder
+   ↓
+Prompt Builder
+   ↓
+Gemini REST API
+   ↓
+Structured JSON
+   ↓
+Pydantic + Application Validation
+   ↓
+Intelligence Persistence
+   ↓
+MySQL intelligence_results
+   ↓
+Jinja Intelligence Interface
+```
 
 ---
 
@@ -1254,10 +1728,10 @@ git clone <repository-url>
 cd bryan-it401-project
 ```
 
-Switch to the A4 branch if necessary:
+Switch to the A5 branch if necessary:
 
 ```bash
-git switch bryan-it401-a4
+git switch bryan-it401-a5
 ```
 
 ---
@@ -1300,6 +1774,7 @@ Major dependencies include:
 - python-dotenv
 - requests
 - BeautifulSoup
+- Pydantic
 
 ---
 
@@ -1326,11 +1801,13 @@ DB_HOST=127.0.0.1
 DB_PORT=3307
 DB_NAME=
 SECRET_KEY=
+GEMINI_API_KEY=
+GEMINI_MODEL=gemini-3.6-flash
 ```
 
 Actual credentials must never be committed to Git.
 
-The project currently does not require an API key for the endoflife.date or Apple security-release sources.
+The endoflife.date and Apple security-release sources do not require API keys for the current project. A5 requires a Gemini Developer API key for intelligence generation. The real key is stored only in `.env`; `.env.example` contains only placeholders.
 
 ---
 
@@ -1397,7 +1874,7 @@ Then apply it:
 flask db upgrade
 ```
 
-A4 adds the `search_events` table through a migration.
+A4 added the `search_events` table through a migration. A5 adds the `intelligence_results` table through `73081e72c1ee_create_intelligence_results_table.py`.
 
 ---
 
@@ -1425,6 +1902,8 @@ Primary routes include:
  /stored-releases/create
  /search
  /search-history
+ /intelligence
+ /intelligence-history
 ```
 
 ---
@@ -1491,6 +1970,46 @@ The application provides a helpful message when no matching records are found.
 ![A4 Search History](static/screenshots/a4-search-history.png)
 
 The Search History interface shows recorded queries, filters, sort selections, result counts, no-result status, and timestamps.
+
+---
+
+## A5 Lifecycle Intelligence Interface
+
+![A5 Intelligence Form](static/screenshots/a5-intelligence-form.png)
+
+The A5 interface separates lifecycle retrieval from the intelligence request and explains the Retrieve → Analyze → Validate → Recommend workflow.
+
+---
+
+## A5 Retrieved Context
+
+![A5 Retrieved Context](static/screenshots/a5-retrieved-context.png)
+
+The interface shows the lifecycle records that were actually supplied as model context.
+
+---
+
+## A5 Generated Intelligence
+
+![A5 Generated Intelligence](static/screenshots/a5-generated-intelligence.png)
+
+The generated result displays recommendation, confidence, summary, rationale, supporting records, and limitations.
+
+---
+
+## A5 Error Handling
+
+![A5 Error Handling](static/screenshots/a5-error-handling.png)
+
+A zero-result retrieval blocks generation and explains that no context was available.
+
+---
+
+## A5 Stored Generated Results
+
+![A5 Intelligence History](static/screenshots/a5-intelligence-history.png)
+
+The Intelligence History interface displays persisted generated results and supporting evidence.
 
 ---
 
@@ -1583,6 +2102,34 @@ Future versions could use search activity to identify:
 
 ---
 
+## A5 Intelligence Design Decisions
+
+### Why Recommendation Was Selected
+
+Recommendation fits BryghtCentral's IT operations domain because lifecycle records already contain evidence that can help a technician decide whether a release should be kept, upgraded, replaced, or investigated.
+
+### Why the Prompt Is Restrictive
+
+The prompt tells Gemini to use only retrieved context and to avoid inventing lifecycle facts. This keeps the output tied to BryghtCentral evidence rather than arbitrary outside knowledge.
+
+### Why Context Is Bounded
+
+At most five retrieved records are supplied. This reduces irrelevant context, latency, and opportunities for unsupported claims.
+
+### How Hallucinations and Invalid Output Are Handled
+
+Gemini receives a JSON schema, Pydantic validates the structure, and the application rejects supporting record IDs that were not included in the retrieved context. Failed validation prevents display and persistence.
+
+### Current A5 Limitations
+
+- The intelligent capability currently focuses on lifecycle recommendations.
+- Gemini availability and free-tier limits may affect response reliability.
+- An exact search can retrieve only one release, so comparison data may be unavailable.
+- Confidence is categorical rather than a statistical probability.
+- Natural-language reasoning still requires human review even after structural validation.
+
+---
+
 # Ethical and Privacy Considerations
 
 Search telemetry can potentially reveal user interests or behavior.
@@ -1592,6 +2139,8 @@ BryghtCentral currently avoids collecting sensitive personal information.
 The telemetry model stores retrieval activity rather than identity information.
 
 If authentication or personalized search is added later, additional privacy controls would be necessary.
+
+For A5, Gemini receives only bounded lifecycle context needed for the current request. Database credentials, API keys, SSH details, and unrelated records are excluded from the prompt.
 
 Potential improvements could include:
 
@@ -1628,6 +2177,18 @@ Known limitations include:
 ---
 
 # Future Work
+
+A6 will evolve the A5 recommendation feature into decision support. The current system explains what the retrieved lifecycle evidence suggests; A6 can add alternatives, tradeoffs, user override, feedback, and decision-oriented presentation.
+
+Potential A6 improvements include:
+
+- Compare KEEP, UPGRADE, REPLACE, and INVESTIGATE alternatives
+- Show tradeoffs and missing evidence
+- Allow the user to accept, reject, or override a recommendation
+- Record recommendation usefulness feedback
+- Improve evaluation of generated intelligence
+- Use broader retrieval when an exact-version search lacks comparison records
+
 
 Future modules can build intelligent behavior on top of the A4 retrieval foundation.
 
@@ -1679,7 +2240,7 @@ Use stored information, search context, lifecycle status, and telemetry to recom
 
 ## Retrieval-Augmented Intelligence
 
-Retrieved lifecycle information could eventually provide grounded context to an intelligent component that generates explanations or IT recommendations.
+A5 now implements retrieval-augmented lifecycle recommendations using retrieved BryghtCentral records as grounded context. A6 can extend this foundation into explicit decision support.
 
 ---
 
@@ -1696,6 +2257,7 @@ Retrieved lifecycle information could eventually provide grounded context to an 
 - python-dotenv
 - Requests
 - BeautifulSoup
+- Pydantic
 - HTML
 - CSS
 - Jinja
@@ -1703,6 +2265,9 @@ Retrieved lifecycle information could eventually provide grounded context to an 
 - GitHub
 - CI Keys
 - SSH tunneling
+- Gemini Developer API
+- Gemini REST `generateContent` endpoint
+- Pydantic
 
 ---
 
@@ -1713,9 +2278,10 @@ A1 — Application Foundation                 Complete
 A2 — Information Acquisition                Complete
 A3 — Information Persistence                Complete
 A4 — Search and Information Retrieval       Complete
+A5 — Intelligence Generation                Complete
 ```
 
-BryghtCentral now supports the full information flow developed through the first four application assignments:
+BryghtCentral now supports the full information flow developed through the first five application assignments:
 
 ```text
 Acquire
@@ -1726,7 +2292,15 @@ Retrieve
    ↓
 Rank
    ↓
+Build Context
+   ↓
+Generate Intelligence
+   ↓
+Validate
+   ↓
+Persist Generated Result
+   ↓
 Present
 ```
 
-This retrieval foundation prepares the application for later IT401 modules involving intelligent behavior, recommendations, and decision support.
+This A5 intelligence foundation prepares BryghtCentral for A6 decision support.

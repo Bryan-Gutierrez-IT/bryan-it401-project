@@ -1,0 +1,799 @@
+{% extends "base.html" %}
+
+{% block title %}
+Lifecycle Intelligence | BryghtCentral
+{% endblock %}
+
+
+{% block content %}
+
+<section class="intelligence-page">
+
+    <div class="intelligence-page-header">
+
+        <div>
+
+            <p class="eyebrow">
+                INTELLIGENCE GENERATION
+            </p>
+
+            <h1>
+                Lifecycle Intelligence
+            </h1>
+
+            <p>
+                Retrieve lifecycle evidence from BryghtCentral
+                and generate a grounded recommendation using
+                the stored records as context.
+            </p>
+
+        </div>
+
+        <a
+            href="{{ url_for('intelligence_history') }}"
+            class="secondary-button"
+        >
+            Intelligence History
+        </a>
+
+    </div>
+
+
+    <div class="intelligence-explainer">
+
+        <div class="intelligence-flow-step">
+
+            <span class="intelligence-flow-number">
+                1
+            </span>
+
+            <div>
+
+                <strong>
+                    Retrieve
+                </strong>
+
+                <p>
+                    Search lifecycle records already stored
+                    in BryghtCentral.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="intelligence-flow-arrow">
+            →
+        </div>
+
+
+        <div class="intelligence-flow-step">
+
+            <span class="intelligence-flow-number">
+                2
+            </span>
+
+            <div>
+
+                <strong>
+                    Analyze
+                </strong>
+
+                <p>
+                    Gemini receives only the retrieved
+                    lifecycle context.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="intelligence-flow-arrow">
+            →
+        </div>
+
+
+        <div class="intelligence-flow-step">
+
+            <span class="intelligence-flow-number">
+                3
+            </span>
+
+            <div>
+
+                <strong>
+                    Validate
+                </strong>
+
+                <p>
+                    Structured output and supporting record
+                    IDs are checked before use.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="intelligence-flow-arrow">
+            →
+        </div>
+
+
+        <div class="intelligence-flow-step">
+
+            <span class="intelligence-flow-number">
+                4
+            </span>
+
+            <div>
+
+                <strong>
+                    Recommend
+                </strong>
+
+                <p>
+                    BryghtCentral presents the validated
+                    lifecycle recommendation.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <form
+        method="POST"
+        action="{{ url_for('intelligence') }}"
+        class="intelligence-form"
+    >
+
+        <div class="intelligence-form-field">
+
+            <label for="search_query">
+                Lifecycle search
+            </label>
+
+            <input
+                id="search_query"
+                type="search"
+                name="search_query"
+                maxlength="200"
+                required
+                placeholder="Try Chrome 154, Ventura, Sequoia..."
+                value="{{ search_query }}"
+            >
+
+            <p class="field-help">
+                BryghtCentral retrieves matching records
+                from the existing lifecycle database first.
+            </p>
+
+        </div>
+
+
+        <div class="intelligence-form-field">
+
+            <label for="user_request">
+                Intelligence request
+            </label>
+
+            <textarea
+                id="user_request"
+                name="user_request"
+                maxlength="500"
+                required
+                rows="4"
+                placeholder="Example: Should an organization still using this release upgrade?"
+            >{{ user_request }}</textarea>
+
+            <p class="field-help">
+                The generated response must be grounded
+                only in the records retrieved above.
+            </p>
+
+        </div>
+
+
+        <div class="intelligence-form-actions">
+
+            <button
+                type="submit"
+                class="primary-button"
+            >
+                Generate Recommendation
+            </button>
+
+            <a
+                href="{{ url_for('intelligence') }}"
+                class="secondary-button"
+            >
+                Clear
+            </a>
+
+        </div>
+
+    </form>
+
+
+    {% if error %}
+
+        <div class="intelligence-error">
+
+            <div class="intelligence-message-icon">
+                !
+            </div>
+
+            <div>
+
+                <h2>
+                    Intelligence Not Generated
+                </h2>
+
+                <p>
+                    {{ error }}
+                </p>
+
+            </div>
+
+        </div>
+
+    {% endif %}
+
+
+    {% if storage_error %}
+
+        <div class="intelligence-warning">
+
+            <div>
+
+                <strong>
+                    Recommendation generated, but storage failed.
+                </strong>
+
+                <p>
+                    {{ storage_error }}
+                </p>
+
+            </div>
+
+        </div>
+
+    {% endif %}
+
+
+    {% if stored_result_id %}
+
+        <div class="intelligence-success">
+
+            <div>
+
+                <strong>
+                    Recommendation validated and stored.
+                </strong>
+
+                <p>
+                    Intelligence result #{{ stored_result_id }}
+                    was saved to BryghtCentral.
+                </p>
+
+            </div>
+
+            <a
+                href="{{ url_for('intelligence_history') }}"
+                class="secondary-button"
+            >
+                View History
+            </a>
+
+        </div>
+
+    {% endif %}
+
+
+    {% if retrieved_records %}
+
+        <section class="intelligence-section">
+
+            <div class="intelligence-section-header">
+
+                <div>
+
+                    <p class="eyebrow">
+                        RETRIEVED CONTEXT
+                    </p>
+
+                    <h2>
+                        Evidence Supplied to the Model
+                    </h2>
+
+                </div>
+
+                <span class="intelligence-count">
+                    {{ retrieved_records|length }}
+                    record{% if retrieved_records|length != 1 %}s{% endif %}
+                </span>
+
+            </div>
+
+
+            <p class="intelligence-section-description">
+                Only these retrieved BryghtCentral records
+                were made available to the intelligence
+                component for this request.
+            </p>
+
+
+            <div class="intelligence-record-grid">
+
+                {% for record in retrieved_records %}
+
+                    <article class="intelligence-record-card">
+
+                        <div class="intelligence-record-top">
+
+                            <div>
+
+                                <p class="record-id-label">
+                                    RECORD #{{ record.id }}
+                                </p>
+
+                                <h3>
+                                    {{ record.product }}
+                                    {{ record.version }}
+                                </h3>
+
+                                {% if record.codename %}
+
+                                    <p class="record-codename">
+                                        {{ record.codename }}
+                                    </p>
+
+                                {% endif %}
+
+                            </div>
+
+
+                            {% if record.is_eol %}
+
+                                <span class="status-badge status-ended">
+                                    Ended
+                                </span>
+
+                            {% elif record.is_maintained %}
+
+                                <span class="status-badge status-active">
+                                    Maintained
+                                </span>
+
+                            {% else %}
+
+                                <span class="status-badge status-unknown">
+                                    Unknown
+                                </span>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        {% if record.description %}
+
+                            <p class="intelligence-record-description">
+                                {{ record.description }}
+                            </p>
+
+                        {% endif %}
+
+
+                        <dl class="intelligence-record-details">
+
+                            <div>
+
+                                <dt>
+                                    Release
+                                </dt>
+
+                                <dd>
+                                    {{ record.release_date or "Unknown" }}
+                                </dd>
+
+                            </div>
+
+
+                            <div>
+
+                                <dt>
+                                    EOL Date
+                                </dt>
+
+                                <dd>
+                                    {{ record.eol_date or "Unknown" }}
+                                </dd>
+
+                            </div>
+
+
+                            <div>
+
+                                <dt>
+                                    Source
+                                </dt>
+
+                                <dd>
+                                    {{ record.source }}
+                                </dd>
+
+                            </div>
+
+
+                            <div>
+
+                                <dt>
+                                    Retrieved
+                                </dt>
+
+                                <dd>
+                                    {{ record.retrieved_date or "Unknown" }}
+                                </dd>
+
+                            </div>
+
+                        </dl>
+
+
+                        {% if record.source_url %}
+
+                            <a
+                                href="{{ record.source_url }}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="intelligence-source-link"
+                            >
+                                View source
+                            </a>
+
+                        {% endif %}
+
+                    </article>
+
+                {% endfor %}
+
+            </div>
+
+        </section>
+
+    {% endif %}
+
+
+    {% if generation %}
+
+        {% set result = generation["data"] %}
+        {% set metadata = generation["metadata"] %}
+
+        <section class="intelligence-section">
+
+            <div class="intelligence-section-header">
+
+                <div>
+
+                    <p class="eyebrow">
+                        GENERATED INTELLIGENCE
+                    </p>
+
+                    <h2>
+                        Lifecycle Recommendation
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <div class="recommendation-hero">
+
+                <div>
+
+                    <p class="recommendation-label">
+                        RECOMMENDATION
+                    </p>
+
+                    <div class="
+                        recommendation-value
+                        recommendation-{{ result['recommendation']|lower }}
+                    ">
+                        {{ result["recommendation"] }}
+                    </div>
+
+                </div>
+
+
+                <div class="confidence-panel">
+
+                    <p class="recommendation-label">
+                        CONFIDENCE
+                    </p>
+
+                    <span class="
+                        confidence-badge
+                        confidence-{{ result['confidence'] }}
+                    ">
+                        {{ result["confidence"]|upper }}
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <div class="intelligence-summary-card">
+
+                <h3>
+                    Summary
+                </h3>
+
+                <p>
+                    {{ result["summary"] }}
+                </p>
+
+            </div>
+
+
+            <div class="intelligence-output-grid">
+
+                <div class="intelligence-output-card">
+
+                    <h3>
+                        Rationale
+                    </h3>
+
+                    <ul>
+
+                        {% for reason in result["rationale"] %}
+
+                            <li>
+                                {{ reason }}
+                            </li>
+
+                        {% endfor %}
+
+                    </ul>
+
+                </div>
+
+
+                <div class="intelligence-output-card">
+
+                    <h3>
+                        Limitations
+                    </h3>
+
+                    <ul>
+
+                        {% for limitation in result["limitations"] %}
+
+                            <li>
+                                {{ limitation }}
+                            </li>
+
+                        {% endfor %}
+
+                    </ul>
+
+                </div>
+
+            </div>
+
+
+            <div class="supporting-evidence">
+
+                <h3>
+                    Supporting Records
+                </h3>
+
+                <p>
+                    Each item below was validated against
+                    the record IDs supplied in the retrieved
+                    context.
+                </p>
+
+
+                <div class="supporting-evidence-list">
+
+                    {% for item in result["supporting_items"] %}
+
+                        <article class="supporting-evidence-card">
+
+                            <div class="supporting-evidence-heading">
+
+                                <strong>
+                                    Record #{{ item["record_id"] }}
+                                </strong>
+
+                                <span>
+                                    {{ item["product"] }}
+                                    {{ item["version"] }}
+                                </span>
+
+                            </div>
+
+
+                            <p>
+                                {{ item["evidence"] }}
+                            </p>
+
+
+                            <small>
+                                Source:
+                                {{ item["source"] }}
+                            </small>
+
+                        </article>
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+
+            <details class="intelligence-metadata">
+
+                <summary>
+                    Generation Details
+                </summary>
+
+
+                <dl>
+
+                    <div>
+
+                        <dt>
+                            Model
+                        </dt>
+
+                        <dd>
+                            {{ metadata["model_name"] }}
+                        </dd>
+
+                    </div>
+
+
+                    <div>
+
+                        <dt>
+                            Prompt Version
+                        </dt>
+
+                        <dd>
+                            {{ metadata["prompt_version"] }}
+                        </dd>
+
+                    </div>
+
+
+                    <div>
+
+                        <dt>
+                            Context Records
+                        </dt>
+
+                        <dd>
+                            {{ metadata["context_record_count"] }}
+                        </dd>
+
+                    </div>
+
+
+                    <div>
+
+                        <dt>
+                            Source Record IDs
+                        </dt>
+
+                        <dd>
+                            {{ metadata["source_record_ids"]|join(", ") }}
+                        </dd>
+
+                    </div>
+
+
+                    <div>
+
+                        <dt>
+                            Finish Reason
+                        </dt>
+
+                        <dd>
+                            {{ metadata["finish_reason"] or "Unknown" }}
+                        </dd>
+
+                    </div>
+
+
+                    <div>
+
+                        <dt>
+                            Prompt Tokens
+                        </dt>
+
+                        <dd>
+                            {{ metadata["prompt_tokens"] or "Unknown" }}
+                        </dd>
+
+                    </div>
+
+
+                    <div>
+
+                        <dt>
+                            Output Tokens
+                        </dt>
+
+                        <dd>
+                            {{ metadata["output_tokens"] or "Unknown" }}
+                        </dd>
+
+                    </div>
+
+
+                    <div>
+
+                        <dt>
+                            Total Tokens
+                        </dt>
+
+                        <dd>
+                            {{ metadata["total_tokens"] or "Unknown" }}
+                        </dd>
+
+                    </div>
+
+                </dl>
+
+            </details>
+
+        </section>
+
+    {% endif %}
+
+
+    {% if not error
+          and not generation
+          and not retrieved_records %}
+
+        <div class="intelligence-empty-state">
+
+            <h2>
+                Generate Lifecycle Intelligence
+            </h2>
+
+            <p>
+                Start by retrieving lifecycle information
+                already stored in BryghtCentral.
+            </p>
+
+            <p class="search-example">
+                Example search:
+                <strong>Chrome 154</strong>
+            </p>
+
+            <p class="search-example">
+                Example request:
+                <strong>
+                    Should an organization still using
+                    this release upgrade?
+                </strong>
+            </p>
+
+        </div>
+
+    {% endif %}
+
+</section>
+
+{% endblock %}
